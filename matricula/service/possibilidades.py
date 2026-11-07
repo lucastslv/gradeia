@@ -4,12 +4,16 @@ from __future__ import annotations
 
 from ..core.api import UfrgsApi
 from ..core.join import analyze
-from ..core.models import Analise
+from ..core.models import Analise, Possibilidades
 from ..core.parser import parse_possibilidades
 
 
 def analisar_html(raw: bytes, api: UfrgsApi) -> Analise:
-    possibilidades = parse_possibilidades(raw)
+    return analisar(parse_possibilidades(raw), api)
+
+
+def analisar(possibilidades: Possibilidades, api: UfrgsApi) -> Analise:
+    """Analisa possibilidades já parseadas, sem precisar do HTML original."""
     curso_id = api.resolve_curso(possibilidades.curso, possibilidades.habilitacao)
 
     period_total = api.period_total(possibilidades.periodo)

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl">
+  <h1 class="text-2xl font-semibold tracking-tight">Assistente de matrícula</h1>
+  <p class="mt-2 text-sm leading-relaxed text-slate-600">
+    Envie o HTML exportado da tela <strong>Possibilidade de Matrícula</strong> do
+    Portal do Aluno. O arquivo diz o que você pode querer cursar; a API pública da
+    UFRGS diz o que está ofertado no período.
+  </p>
+
+  {% if erro %}
+  <div class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+    {{ erro }}
+  </div>
+  {% endif %}
+
+  <form
+    class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+    action="/analisar"
+    method="post"
+    enctype="multipart/form-data"
+  >
+    <label for="arquivo" class="block text-sm font-medium text-slate-700">
+      Arquivo HTML
+    </label>
+    <input
+      id="arquivo"
+      name="arquivo"
+      type="file"
+      accept=".html,.htm,text/html"
+      required
+      class="mt-2 block w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-slate-700"
+    >
+    <button
+      type="submit"
+      class="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+    >
+      Verificar oferta
+    </button>
+  </form>
+
+  <div class="mt-6 grid gap-3 text-sm sm:grid-cols-3">
+    <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+      <p class="font-medium text-emerald-800">Ofertada</p>
+      <p class="mt-1 text-xs text-emerald-700">Há turma no período, para o seu curso.</p>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-3">
+      <p class="font-medium text-slate-700">Não ofertada</p>
+      <p class="mt-1 text-xs text-slate-500">O período tem oferta, mas não para essa disciplina.</p>
+    </div>
+    <div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
+      <p class="font-medium text-amber-800">Não publicado</p>
+      <p class="mt-1 text-xs text-amber-700">O período ainda não tem turmas publicadas.</p>
+    </div>
+  </div>
+
+  <p class="mt-6 text-xs leading-relaxed text-slate-400">
+    O arquivo contém seus dados pessoais. Nome, IP e sessão são descartados; guardamos
+    apenas curso, período e disciplinas. O ícone de relógio do Portal é ignorado de
+    propósito — ele não indica a oferta do próximo semestre.
+  </p>
+</div>
+{% endblock %}

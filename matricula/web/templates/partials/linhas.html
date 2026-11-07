@@ -1,0 +1,44 @@
+{% set labels = {
+  "ofertada": "ofertada",
+  "nao_ofertada": "não ofertada",
+  "nao_publicado": "não publicado"
+} %}
+
+{% for oferta in ofertas %}
+  {% set disciplina = oferta.disciplina %}
+  {% set estado = oferta.estado.value %}
+  {% if oferta.turmas %}
+  <details class="disc">
+    <summary class="disc-row">
+      <span class="sigla">{{ disciplina.sigla }}</span>
+      <span class="nome">{{ disciplina.nome }}</span>
+      <span class="etapa">{{ disciplina.etapa if disciplina.etapa is not none else "—" }}</span>
+      <span class="carater">{{ disciplina.carater }}</span>
+      <span class="creditos">{{ disciplina.creditos }}</span>
+      <span><span class="badge badge-{{ estado }}">{{ labels[estado] }}</span></span>
+    </summary>
+    <div class="turmas">
+      {% for turma in oferta.turmas %}
+      <div class="turma">
+        <span class="turma-id">turma {{ turma.turma }}</span>
+        <span>{{ turma|encontros }}</span>
+        {% if turma.encontros and turma.encontros[0].campus %}
+        <span class="campus">{{ turma.encontros[0].campus }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </details>
+  {% else %}
+  <div class="disc-row disc-static">
+    <span class="sigla">{{ disciplina.sigla }}</span>
+    <span class="nome">{{ disciplina.nome }}</span>
+    <span class="etapa">{{ disciplina.etapa if disciplina.etapa is not none else "—" }}</span>
+    <span class="carater">{{ disciplina.carater }}</span>
+    <span class="creditos">{{ disciplina.creditos }}</span>
+    <span><span class="badge badge-{{ estado }}">{{ labels[estado] }}</span></span>
+  </div>
+  {% endif %}
+{% else %}
+<p class="p-6 text-sm text-slate-500">Nenhuma disciplina com esses filtros.</p>
+{% endfor %}

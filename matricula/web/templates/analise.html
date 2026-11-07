@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex flex-wrap items-start justify-between gap-3">
+  <div>
+    <p class="text-xs font-medium uppercase tracking-wider text-slate-500">
+      Período {{ analise.possibilidades.periodo }}
+    </p>
+    <h1 class="mt-1 text-2xl font-semibold tracking-tight">
+      {{ analise.possibilidades.curso }}
+    </h1>
+    {% if analise.possibilidades.habilitacao %}
+    <p class="text-sm text-slate-500">{{ analise.possibilidades.habilitacao }}</p>
+    {% endif %}
+  </div>
+  <div class="flex gap-2">
+    <form method="post" action="/analise/{{ analise_id }}/reverificar">
+      <button
+        type="submit"
+        class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+      >
+        Verificar novamente
+      </button>
+    </form>
+    <a
+      href="/"
+      class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+    >
+      Trocar arquivo
+    </a>
+  </div>
+</div>
+
+<div class="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+  {% set cards = [
+    ("Disciplinas", analise.resumo.total, "text-slate-900"),
+    ("Ofertadas", analise.resumo.ofertadas, "text-emerald-700"),
+    ("Não ofertadas", analise.resumo.nao_ofertadas, "text-slate-600"),
+    ("Pendentes", analise.resumo.nao_publicadas, "text-amber-700")
+  ] %}
+  {% for label, valor, cor in cards %}
+  <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ label }}</p>
+    <p class="mt-1 text-2xl font-semibold {{ cor }}">{{ valor }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% if not analise.periodo_publicado %}
+<div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+  A oferta de {{ analise.possibilidades.periodo }} ainda não foi publicada. As
+  disciplinas não podem ser avaliadas agora — use “Verificar novamente” quando a
+  UFRGS divulgar a oferta.
+</div>
+{% endif %}
+
+<form
+  class="mt-6 flex flex-wrap gap-2"
+  hx-get="/analise/{{ analise_id }}/linhas"
+  hx-target="#linhas"
+  hx-trigger="change, keyup changed delay:300ms from:input[name='q']"
+>
+  <input
+    type="search"
+    name="q"
+    value="{{ filtros.q }}"
+    placeholder="Buscar disciplina ou sigla"
+    class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+  >
+  <select
+    name="estado"
+    class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+  >
+    <option value="">Todos os estados</option>
+    <option value="ofertada" {% if filtros.estado == "ofertada" %}selected{% endif %}>Ofertadas</option>
+    <option value="nao_ofertada" {% if filtros.estado == "nao_ofertada" %}selected{% endif %}>Não ofertadas</option>
+    <option value="nao_publicado" {% if filtros.estado == "nao_publicado" %}selected{% endif %}>Não publicadas</option>
+  </select>
+  <select
+    name="carater"
+    class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+  >
+    <option value="">Todos os caráteres</option>
+    <option value="obrigatoria" {% if filtros.carater == "obrigatoria" %}selected{% endif %}>Obrigatórias</option>
+    <option value="eletiva" {% if filtros.carater == "eletiva" %}selected{% endif %}>Eletivas</option>
+  </select>
+</form>
+
+<div class="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+  <div class="disc-header">
+    <span>Sigla</span>
+    <span>Disciplina</span>
+    <span>Etapa</span>
+    <span>Caráter</span>
+    <span>Créditos</span>
+    <span>Estado</span>
+  </div>
+  <div id="linhas">
+    {% include "partials/linhas.html" %}
+  </div>
+</div>
+{% endblock %}

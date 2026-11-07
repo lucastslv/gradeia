@@ -28,6 +28,16 @@ uv run python -m matricula.cli "Aluno - Possibilidade de Matrícula.html"
 uv run python -m matricula.cli "Aluno - Possibilidade de Matrícula.html" --json
 ```
 
+Interface web:
+
+```bash
+uv run uvicorn matricula.web.app:app --reload
+# http://127.0.0.1:8000
+```
+
+A UI usa HTMX e Tailwind via CDN (protótipo). Para produção, gere o CSS do
+Tailwind em vez de usar o CDN.
+
 O HTML contém dados pessoais (nome, IP, sessão). O parser descarta esses campos;
 não versione o arquivo original. O fixture em `tests/fixtures/` é anonimizado.
 

@@ -1,0 +1,136 @@
+:root {
+  color-scheme: light;
+}
+
+.disc-header,
+.disc-row {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) 3.5rem 8rem 4rem 8rem;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  font-size: 0.875rem;
+}
+
+.disc-header {
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.disc {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.disc:last-child {
+  border-bottom: 0;
+}
+
+.disc-row {
+  cursor: pointer;
+  list-style: none;
+}
+
+.disc-row::-webkit-details-marker {
+  display: none;
+}
+
+.disc-row:hover,
+.disc[open] > .disc-row {
+  background: #f8fafc;
+}
+
+.disc-static {
+  cursor: default;
+}
+
+.disc-static:hover {
+  background: transparent;
+}
+
+.sigla {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.nome {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.etapa,
+.carater,
+.creditos {
+  color: #475569;
+}
+
+.badge {
+  display: inline-block;
+  border-radius: 9999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-ofertada {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.badge-nao_ofertada {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.badge-nao_publicado {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.turmas {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0 1rem 1rem 8rem;
+}
+
+.turma {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #475569;
+}
+
+.turma-id {
+  font-weight: 600;
+  color: #334155;
+}
+
+.campus {
+  color: #94a3b8;
+}
+
+@media (max-width: 760px) {
+  .disc-header {
+    display: none;
+  }
+
+  .disc-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem 0.75rem;
+  }
+
+  .nome {
+    grid-column: 1 / -1;
+  }
+
+  .turmas {
+    padding-left: 1rem;
+  }
+}
