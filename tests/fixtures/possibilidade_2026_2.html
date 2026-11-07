@@ -1,0 +1,863 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+<!-- CSS da Moldura -->
+<link href="../layout/form_ufrgs_novo.css" media="screen" rel="stylesheet" type="text/css" />
+<link href="../layout/form_ufrgs_print_novo.css" media="print" rel="stylesheet" type="text/css" />
+
+<!-- CSS dos Serviços -->
+<link href="/design/formulario.css" media="all" rel="stylesheet" type="text/css" />
+<link href="/design/simples.css?atualizar=1" media="all" rel="stylesheet" type="text/css" />
+<link href="/design/tabela.css" media="all" rel="stylesheet" type="text/css" />
+<link href="/design/texto.css" media="all" rel="stylesheet" type="text/css" />
+<link href="/admdados/entradaintranet/public/PORTAL_css.css" rel="stylesheet" type="text/css"></link>
+<script type='text/javascript' src='/admdados/entradaintranet/public/Portal_js.js'></script>
+<link href="/funcoes/jquery/css/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" language="javascript" src="/funcoes/jquery/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" language="javascript" src="/funcoes/jquery/jquery-ui-1.8.16.custom.min.js"></script>
+<title>Aluno - Possibilidade de Matrícula</title>
+
+<script language="javascript" type="text/javascript">
+
+    function movemenu(idgrupo)
+    {
+            var grupo=document.getElementById(idgrupo);
+            if(grupo.className=="grupo_expandido")
+                    grupo.className="grupo_contraido";
+            else
+                    grupo.className="grupo_expandido";
+
+            grupo.focus();
+    }
+
+    function trocaperfil(val)
+    {
+        window.location=val;
+    }
+
+    function Ampliar(){
+
+        var grupo=document.getElementById("amp");
+        var grupo2=document.getElementById("tst");
+        var grupo3=document.getElementById("tst2");
+
+        if(grupo.innerHTML=="Abrir")
+        {
+            grupo.innerHTML="Fechar";
+            grupo2.media="screen";
+            grupo3.media="braile";
+
+        }
+        else
+        {
+            grupo.innerHTML="Abrir";
+            grupo2.media="braile";
+            grupo3.media="screen";
+        }
+
+    }
+
+</script>
+</head>
+
+
+
+<body  >
+
+  <!--top-->
+    <div id="top">
+    
+        <div id="logo_ufrgs">
+            <span class="UFRGS">UFRGS</span>
+        </div>
+<div id="abas"><ul>                <li  ><a href="index.php?cods=8,5,16,82" >Geral</a></li>
+                                <li  id="current"  ><a href="index.php?cods=1,1,0,0"  class="selecao">Aluno</a></li>
+                </ul></div><!--
+<div id="identificacao">
+    <a href="/portalservicos/sair.php">Sair</a>
+    <span> |&nbsp;</span>
+    <span class="nomePessoa"></span> 
+</div>
+-->
+<div id="identificacao">
+    <div class="nomePessoa">ALUNO DE TESTE</div> 
+    <div style='font-size: 9px;color: #FF0000'>Último Acesso: 28/10/2026 às 08:41, IP: 0.0.0.0</div>
+    <div><a style='color: #000' href="/portalservicos/sair.php">Sair</a></div>
+</div>
+</div>
+<!--top-->
+
+<div id="sub_topo">
+    <div id="d_perfil">
+            <span>
+
+            Graduação</span>
+                  
+    </div>
+
+    </div>
+
+
+<div id="geral">
+
+
+
+<div id="menu">            <div class="grupo_menu_selecionado">
+                <div id="m2" class="grupo_expandido">
+                    <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m2'); " class="grupo">Informações do Aluno</a></h3>
+                    <ul class="menu">                   
+                                        <li ><a id="srv_1_1_2_1" href='?cods=1,1,2,1' title="">Identificação e Endereço</a></li>
+                            <li ><a id="srv_1_1_2_2" href='?cods=1,1,2,2' title="">Curso e Situação Acadêmica</a></li>
+                            <li ><a id="srv_1_1_2_3" href='?cods=1,1,2,3' title="">Histórico Escolar</a></li>
+                            <li ><a id="srv_1_1_2_4" href='?cods=1,1,2,4' title="">Histórico do Curso</a></li>
+                            <li ><a id="srv_1_1_2_81" href='?cods=1,1,2,81' title="">Análise Curricular</a></li>
+                            <li  class="destaque" ><a id="srv_1_1_2_5" href='?cods=1,1,2,5' title="">Possibilidade de Matrícula</a></li>
+                            <li ><a id="srv_1_1_2_6" href='?cods=1,1,2,6' title="">Horários e Vagas por Departamento</a></li>
+                            <li ><a id="srv_1_1_2_7" href='?cods=1,1,2,7' title="">Horários e Vagas por Grupo de Matrícula</a></li>
+                            <li ><a id="srv_1_1_2_9" href='?cods=1,1,2,9' title="">Atividades Correntes</a></li>
+                            <li ><a id="srv_1_1_2_8" href='?cods=1,1,2,8' title="">Avaliação de Desempenho</a></li>
+                            <li ><a id="srv_1_1_2_11" href='?cods=1,1,2,11' title="">Comprovante de Matrícula Autenticado</a></li>
+                            <li ><a id="srv_1_1_2_30" href='?cods=1,1,2,30' title="">Atestados</a></li>
+                            <li ><a id="srv_1_1_2_13" href='?cods=1,1,2,13' title="">Resultado da Avaliação de Disciplinas</a></li>
+                            <li ><a id="srv_1_1_2_14" href='?cods=1,1,2,14' title="">Histórico da Avaliação de Disciplinas</a></li>
+                            <li ><a id="srv_1_1_2_78" href='?cods=1,1,2,78' title="">Projeto Pedagógico de Curso</a></li>
+  
+                            <li ><a id="srv_1_1_2_321" href='/assuntosestudantis/estagiosweb/index.php/Consultas/consultaaluno' title="">Bolsas e Estágios</a></li>
+                    </ul>                   
+                </div>
+            </div>
+                            <div class="grupo_menu">
+                    <div id="m25" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m25'); " class="grupo">Informações Pessoais</a></h3>
+                        <ul class="menu">                   
+                                            <li ><a id="srv_1_1_25_186" href='/AdmDados/dadoscadastrais/dados/servico/186' title="">Dados Pessoais</a></li>
+                            <li ><a id="srv_1_1_25_330" href='/VinculosPessoa/default.php' title="">Vínculos</a></li>
+                            <li ><a id="srv_1_1_25_169" href='#' onClick='javascript:window.open("/PortalServidor/RecursosHumanos/Qualificacao/qua_cadastrar_nova.php","_blank","top=100,left=100,width=600,height=400,scrollbars=1,menubar=1,resizable=1");' title="">Qualificações</a></li>
+                            <li ><a id="srv_1_1_25_170" href='/PortalServidor/RecursosHumanos/Capacitacao/lista_cursos_servidor.php' title="">Capacitações</a></li>
+                            <li ><a id="srv_1_1_25_172" href='#' onClick='javascript:window.open("/LattesISCurriculumCNPQ.php","_blank");' title="">Currículo Lattes CNPQ</a></li>
+                            <li ><a id="srv_1_1_25_187" href='/Protocolo/CadProc/processo/pessoa?servico=187' title="">Processos</a></li>
+                            <li ><a id="srv_1_1_25_183" href='/AutorizacaoTransferenciaDados/default.php' title="">Autorização Transferência de Dados</a></li>
+                            <li ><a id="srv_1_1_25_175" href='/portalservidor/recursoshumanos/prontuario/vacinas/vacinas.php' title="">Vacinas aplicadas na UFRGS</a></li>
+                                <li><a id="srv_1_1_25_176" href='?cods=1,1,25,176' title="Atualizações">Atualizações</a></li>
+                                                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m1" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m1'); " class="grupo">Matrícula</a></h3>
+                        <ul class="menu">                   
+                                                <li><a id="srv_1_1_1_17" href='?cods=1,1,1,17' title="Ordenamento">Ordenamento</a></li>
+                                                                <li><a id="srv_1_1_1_18" href='?cods=1,1,1,18' title="Encomenda de Matrícula">Encomenda de Matrícula</a></li>
+                                                                <li><a id="srv_1_1_1_20" href='?cods=1,1,1,20' title="Ajuste de Matrícula">Ajuste de Matrícula</a></li>
+                                                                <li><a id="srv_1_1_1_332" href='?cods=1,1,1,332' title="Matrícula de Inclusão">Matrícula de Inclusão</a></li>
+                                                                <li><a id="srv_1_1_1_21" href='?cods=1,1,1,21' title="Solicitação Extracurricular">Solicitação Extracurricular</a></li>
+                                                                <li><a id="srv_1_1_1_22" href='?cods=1,1,1,22' title="Extrato e Resultado de Solicitação">Extrato e Resultado de Solicitação</a></li>
+                                                                <li><a id="srv_1_1_1_224" href='?cods=1,1,1,224' title="Horários e Vagas por Grupo de Matrícula">Horários e Vagas por Grupo de Matrícula</a></li>
+                                                            <li ><a id="srv_1_1_1_166" href='/PortalEnsino/GradeHorarios/index.php' title="">Grade de Horários</a></li>
+                                <li><a id="srv_1_1_1_79" href='?cods=1,1,1,79' title="Confirmação de Matrícula Medicina">Confirmação de Matrícula Medicina</a></li>
+                                                                <li><a id="srv_1_1_1_27" href='?cods=1,1,1,27' title="Solicitação de Permanência">Solicitação de Permanência</a></li>
+                                                                <li><a id="srv_1_1_1_28" href='?cods=1,1,1,28' title="Solicitação de Troca de Currículo/Habilitação/FDC">Solicitação de Troca de Currículo/Habilitação/FDC</a></li>
+                                                                <li><a id="srv_1_1_1_76" href='?cods=1,1,1,76' title="Créditos  Complementares">Créditos  Complementares</a></li>
+                                                                <li><a id="srv_1_1_1_77" href='?cods=1,1,1,77' title="Planos de Ensino">Planos de Ensino</a></li>
+                                                                <li><a id="srv_1_1_1_325" href='?cods=1,1,1,325' title="Exclusão de Matrícula">Exclusão de Matrícula</a></li>
+                                                                <li><a id="srv_1_1_1_25" href='?cods=1,1,1,25' title="Trancamento">Trancamento</a></li>
+                                                                <li><a id="srv_1_1_1_26" href='?cods=1,1,1,26' title="Cancelamento">Cancelamento</a></li>
+                                                            <li ><a id="srv_1_1_1_346" href='/PortalEnsino/PortalComgrad/matricula/vinculoAtividadeExtensao/relatorioAluno' title="">Relatório Atividades UCE</a></li>
+                                <li><a id="srv_1_1_1_29" href='?cods=1,1,1,29' title="Critérios para Quebra de Pré-Requisitos">Critérios para Quebra de Pré-Requisitos</a></li>
+                                                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m49" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m49'); " class="grupo">Avaliação Institucional</a></h3>
+                        <ul class="menu">                   
+                                            <li ><a id="srv_1_1_49_324" href='/aplicacoesyii2/frontend/web/portalufrgs/avaliacao/instrumentoavaliacao/avaliacao/avaliacao-discente' title="">Avaliação do Docente pelo Discente</a></li>
+                            <li ><a id="srv_1_1_49_348" href='/aplicacoesyii2/frontend/web/portalufrgs/avaliacao/instrumentoavaliacao/avaliacao/avaliacao-infraestrutura-graduacao' title="">Avaliação da Infraestrutura</a></li>
+                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m40" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m40'); " class="grupo">Documentos</a></h3>
+                        <ul class="menu">                   
+                                            <li ><a id="srv_1_1_40_323" href='/aplicacoesyii2/frontend/web/portalufrgs/diplomaDigital/consulta-historico/index' title="">Históricos</a></li>
+                                <li><a id="srv_1_1_40_322" href='?cods=1,1,40,322' title="Atestados">Atestados</a></li>
+                                                            <li ><a id="srv_1_1_40_333" href='/sistemas/termosAluno/termo' title="">Termos</a></li>
+                            <li ><a id="srv_1_1_40_334" href='/AssuntosEstudantis/estagiosWeb/index.php/declaracoesAproveitamento/index' title="">Estágio</a></li>
+                            <li ><a id="srv_1_1_40_336" href='/PortalEnsino/Matricula/autodeclaracaoVacinal' title="">Autodeclaração Vacinal</a></li>
+                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m13" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m13'); " class="grupo">Diplomação</a></h3>
+                        <ul class="menu">                   
+                                                <li><a id="srv_1_1_13_68" href='?cods=1,1,13,68' title="Solicitação de Colação de Grau">Solicitação de Colação de Grau</a></li>
+                                                                <li><a id="srv_1_1_13_69" href='?cods=1,1,13,69' title="Lista de Solicitantes de Diplomação">Lista de Solicitantes de Diplomação</a></li>
+                                                            <li ><a id="srv_1_1_13_335" href='/aplicacoesyii2/frontend/web/portalufrgs/diplomaDigital/consulta-diploma' title="">Diploma Digital</a></li>
+                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m11" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m11'); " class="grupo">Monitoria</a></h3>
+                        <ul class="menu">                   
+                                                <li><a id="srv_1_1_11_70" href='?cods=1,1,11,70' title="Inscrição Monitoria">Inscrição Monitoria</a></li>
+                                                                <li><a id="srv_1_1_11_72" href='?cods=1,1,11,72' title="Certificados">Certificados</a></li>
+                                                                <li><a id="srv_1_1_11_71" href='?cods=1,1,11,71' title="Termo de Compromisso">Termo de Compromisso</a></li>
+                                                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m12" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m12'); " class="grupo">Mural</a></h3>
+                        <ul class="menu">                   
+                                                <li><a id="srv_1_1_12_15" href='?cods=1,1,12,15' title="Mural de Recados">Mural de Recados</a></li>
+                                                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m14" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m14'); " class="grupo">Extravestibular</a></h3>
+                        <ul class="menu">                   
+                                                <li><a id="srv_1_1_14_73" href='?cods=1,1,14,73' title="Solicitação de Transferência Interna">Solicitação de Transferência Interna</a></li>
+                                                                <li><a id="srv_1_1_14_75" href='?cods=1,1,14,75' title="Acompanhamento Extravestibular">Acompanhamento Extravestibular</a></li>
+                                                                <li><a id="srv_1_1_14_74" href='?cods=1,1,14,74' title="Cancelamento de Transferência Interna">Cancelamento de Transferência Interna</a></li>
+                                                        </ul>                   
+                    </div>
+                </div>
+                                            <div class="grupo_menu">
+                    <div id="m50" class="grupo_contraido">
+                        <h3 class="menu_titulo_expandido"><a href="javascript:  movemenu('m50'); " class="grupo">Registros Acadêmicos</a></h3>
+                        <ul class="menu">                   
+                                                <li><a id="srv_1_1_50_347" href='/ensino/registrosAcademicos/registrosAcademicos/solicitacao?cods=1,1,50,347' title="Solicitação">Solicitação</a></li>
+                                                        </ul>                   
+                    </div>
+                </div>
+                            </div>
+
+
+<div id="estrutura">
+    <div id="cabecalho">
+        <img id="cabecalho_logo" src="../layout/img/logo_ufrgs_new.png" />
+        <div id="cabecalho_ufrgs">Universidade Federal do Rio Grande do Sul</div>
+        <div id="cabecalho_portal">Portal de Serviços</div>
+        <div id="titulo-pagina">Possibilidade de Matrícula</div>
+    </div>
+    <div id="cont">
+
+
+        <div id="conteudo">
+    <script language="javascript">
+        function AbreHorario(CodAtiv, CodHab, CodCurr, Semestre) {
+            w = 700;
+            h = 350;
+            posx = (screen.width / 2) - (w / 2);
+            posy = (screen.height / 2) - (h / 2);
+            window.open('/PortalEnsino/GraduacaoAluno/view/HorarioAtividade.php?CodAtiv=' + CodAtiv + '&CodHab=' + CodHab + '&CodCur=' + CodCurr + '&Sem=' + Semestre, 'Horario',
+                    'width=' + w + ',height=' + h + ',top=' + posy + ',left=' + posx + ', scrollbars=1').focus();
+        }
+
+
+
+    </script>
+
+    <script language="javascript">
+    </script>
+
+
+    <style type="text/css">
+
+        table a{ text-decoration:none; }
+        table a:hover{ text-decoration:underline;  }
+
+    </style>
+
+            <div class="moldura">
+            <span class="title-legend">Vínculo em 2026/2</span>
+            <strong>Curso:</strong> CIÊNCIA DA COMPUTAÇÃO <br/>
+            <strong>Habilitação:</strong> BACHARELADO EM CIÊNCIA DA COMPUTAÇÃO <br/>
+            <strong>Currículo:</strong> BACHARELADO EM CIÊNCIA DA COMPUTAÇÃO 
+        </div>
+<script language="javascript">		function TrocaSem(val)	{ var str=window.location+" "; 	var patt1="&Sem=[^&]+";	st=(str.match(patt1));	if(st)	{window.location=str.replace(st,"&Sem="+val)}else{window.location=window.location+"&Sem="+val;}}  </script><fieldset class='moldura' style='clear:none'><legend class='legend-2'>Período Letivo</legend><select name="Sem" onChange="javascript: TrocaSem(this.value)"><option value="2026012" >2026/1</option><option value="2026022" selected="selected">2026/2</option><option value="2027012" >2027/1</option></select></fieldset>            <table id="poss" class="modelo1" style="width:95%">
+                <tr class="TabForte" valign="middle">
+                    <td class="th1"  align="center">Plano Ensino</td>
+                    <td class="th1" align="center" height="25">Atividade de Ensino</td>
+                    <td class="th1"  align="center">&nbsp;Etapa&nbsp;</td>
+                    <td class="th1"  align="center">&nbsp;Caráter&nbsp;</td>
+                    <td class="th1"  align="center">&nbsp;Créditos&nbsp;</td>
+					<td class="th1"  align="center">&nbsp;CH Total&nbsp;</td>
+                    <td class="th1"  align="center">&nbsp;CH Extensão&nbsp;</td>
+                </tr>
+
+                                <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3615_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3615,36  ,95 , 2026022)">
+                ORGANIZAÇÃO DE COMPUTADORES  - (INF01113)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45559_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45559,36  ,95 , 2026022)">
+                PROJETO E ANÁLISE DE ALGORITMOS II  - (INF05028)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=8617_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(8617,36  ,95 , 2026022)">
+                CÁLCULO NUMÉRICO A  - (MAT01032)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;5&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=10226_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(10226,36  ,95 , 2026022)">
+                COMPUTAÇÃO GRÁFICA E VISUALIZAÇÃO I  - (INF01047)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;5&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=10234_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(10234,36  ,95 , 2026022)">
+                INTELIGÊNCIA ARTIFICIAL  - (INF01048)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;5&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45787_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45787,36  ,95 , 2026022)">
+                PROJETO EM CIÊNCIA E INOVAÇÃO  - (INF99003)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;5&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;8&nbsp;</td>
+						<td align="center">&nbsp;120&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3644_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3644,36  ,95 , 2026022)">
+                SISTEMAS OPERACIONAIS I N  - (INF01142)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;5&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45695_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45695,36  ,95 , 2026022)">
+                LINGUAGENS DE PROGRAMAÇÃO I  - (INF05029)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;6&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=10225_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(10225,36  ,95 , 2026022)">
+                PROCESSAMENTO DE IMAGENS E VISÃO COMPUTACIONAL I  - (INF01046)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;6&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45692_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45692,36  ,95 , 2026022)">
+                REDES DE COMPUTADORES E INTERNET  - (INF01084)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;6&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=9993_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(9993,36  ,95 , 2026022)">
+                CIBERSEGURANÇA  - (INF01045)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;7&nbsp;</td>
+                        <td align="center">&nbsp;Obrigatória&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45689_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45689,36  ,95 , 2026022)">
+                APRENDIZADO PROFUNDO PARA COMPUTAÇÃO VISUAL  - (INF01081)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=7964_2015022" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(7964,36  ,95 , 2026022)">
+                ARQUITETURA E DESEMPENHO DE BANCO DE DADOS  - (INF01023)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3614_2025012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3614,36  ,95 , 2026022)">
+                ARQUITETURA E ORGANIZAÇÃO DE COMPUTADORES II  - (INF01112)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3648_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3648,36  ,95 , 2026022)">
+                AVALIAÇÃO DE DESEMPENHO  - (INF01146)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=19994_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(19994,36  ,95 , 2026022)">
+                BIOLOGIA COMPUTACIONAL  - (INF05018)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45792_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45792,36  ,95 , 2026022)">
+                CIÊNCIA DE DADOS N  - (INF01090)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3626_2022012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3626,36  ,95 , 2026022)">
+                CLASSIFICAÇÃO E PESQUISA DE DADOS  - (INF01124)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3642_2019022" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3642,36  ,95 , 2026022)">
+                COMPUTADOR E SOCIEDADE  - (INF01140)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3666_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3666,36  ,95 , 2026022)">
+                CONCEPÇÃO DE CIRCUITOS INTEGRADOS I  - (INF01185)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=4046_2023012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(4046,36  ,95 , 2026022)">
+                INGLÊS INSTRUMENTAL PARA PROCESSAMENTO DE DADOS I  - (LET02720)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45693_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45693,36  ,95 , 2026022)">
+                LABORATÓRIO DE REDES DE COMPUTADORES  - (INF01082)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;2&nbsp;</td>
+						<td align="center">&nbsp;30&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=16861_2023022" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(16861,36  ,95 , 2026022)">
+                LÍNGUA BRASILEIRA DE SINAIS (LIBRAS)  - (EDU03071)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;2&nbsp;</td>
+						<td align="center">&nbsp;30&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3623_2014012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3623,36  ,95 , 2026022)">
+                MODELOS DE LINGUAGEM DE PROGRAMAÇÃO  - (INF01121)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45797_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45797,36  ,95 , 2026022)">
+                NOVAS ABORDAGENS DE BANCO DE DADOS  - (INF01095)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=7962_2010022" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(7962,36  ,95 , 2026022)">
+                PROJETO DE HIPERDOCUMENTOS  - (INF01021)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=45798_2026022" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(45798,36  ,95 , 2026022)">
+                RECUPERAÇÃO DE INFORMAÇÃO  - (INF01096)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=8725_2026012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(8725,36  ,95 , 2026022)">
+                ROBÓTICA MÓVEL INTELIGENTE  - (INF01034)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                            </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(7955,36  ,95 , 2026022)">
+                SISTEMAS DE BANCO DE DADOS DISTRIBUÍDOS  - (INF01014)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                                    <a href="/Ensino/PlanoDeEnsino/PlanoDeEnsinoPDF/Paginas/Visao/PDFPlanoDeEnsino.php?AtividadeEnsino=3660_2014012" target="_blank">
+                                    <img src="/PortalEnsino/GraduacaoAluno/imgs/iconImpressora.gif" class="imagemPlano" alt="Imprimir" title="Imprimir Plano de Ensino desta atividade">
+                                </a>
+                                        </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(3660,36  ,95 , 2026022)">
+                SISTEMAS DIGITAIS PARA COMPUTADORES A  - (INF01175)</a>&nbsp;&nbsp; <img style='cursor:help;' src='/Design/visual_ufrgs/clock.gif' title='Esta atividade possui turmas oferecidas neste semestre.' />&nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;4&nbsp;</td>
+						<td align="center">&nbsp;60&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                            </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(36917,36  ,95 , 2026022)">
+                VÍNCULO ACADÊMICO - ERE 2020/1  - (VAERE201)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+						<td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                            </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(37410,36  ,95 , 2026022)">
+                VÍNCULO ACADÊMICO - ERE 2020/2  - (VAERE202)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+						<td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1odd" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                            </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(38399,36  ,95 , 2026022)">
+                VÍNCULO ACADÊMICO - ERE 2021/1  - (VAERE211)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+						<td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                                    <tr class="modelo1even" style="font-size:10px; height: 22px;">
+                        <td align="center">
+                                            </td>
+                        <td align="left">
+                            &nbsp;<a href="javascript: AbreHorario(39284,36  ,95 , 2026022)">
+                VÍNCULO ACADÊMICO - ERE 2021/2  - (VAERE212)</a>&nbsp;&nbsp; &nbsp;
+                        </td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;Eletiva&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+						<td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                        <td align="center">&nbsp;&nbsp;-&nbsp;&nbsp;</td>
+                    </tr>
+                            </table>
+
+                <!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  
+  
+  _paq.push(['setCustomUrl', location.href.toLowerCase()]);  
+  _paq.push(['setCustomVariable','1','servidor','astra3']); 
+  _paq.push(['setCustomVariable','2','cartao','602366','page']); 
+  
+    
+  (function() {
+    var u="https://analytics.ufrgs.br/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);	
+    _paq.push(['setSiteId', '2']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+        </div>
+
+            <div id="baixo-estrutura">
+                <div id="canto-dir"></div>
+            </div><!--baixo-estrutura-->
+        </div><!--cont-->
+    </div>
+<!--estrutura-->
+
+</div><!--geral-->
+
+        <div id="div_mural_recados"></div>
+</body>
+</html>
+
+
