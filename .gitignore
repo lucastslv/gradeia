@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local cache and tooling
+.cache/
+*.db
+.pytest_cache/
+.ruff_cache/
+
+# Personal input files (contain name, IP and session data)
+Aluno - Possibilidade de Matrícula.html

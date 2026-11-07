@@ -1,0 +1,20 @@
+[project]
+name = "matricula-ai"
+version = "0.1.0"
+description = "Assistente de matrícula de veteranos da UFRGS"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
