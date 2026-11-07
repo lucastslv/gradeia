@@ -8,10 +8,9 @@ from pathlib import Path
 
 from .core.api import UfrgsApi
 from .core.cache import SqliteCache
-from .core.models import Analise, Estado, Turma
+from .core.format import format_turma
+from .core.models import Analise, Estado
 from .service.possibilidades import analisar_html
-
-DIAS = {2: "seg", 3: "ter", 4: "qua", 5: "qui", 6: "sex", 7: "sáb"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -72,7 +71,7 @@ def print_report(analise: Analise) -> None:
             f"{_estado(oferta.estado)}"
         )
         for turma in oferta.turmas:
-            print(f"          {_turma(turma)}")
+            print(f"          {format_turma(turma)}")
 
 
 def _estado(estado: Estado) -> str:
@@ -81,17 +80,6 @@ def _estado(estado: Estado) -> str:
         Estado.NAO_OFERTADA: "não ofertada",
         Estado.NAO_PUBLICADO: "não publicado",
     }[estado]
-
-
-def _turma(turma: Turma) -> str:
-    encontros = ", ".join(
-        f"{DIAS.get(encontro.dia_semana, str(encontro.dia_semana))} "
-        f"{encontro.hora_inicio}-{encontro.hora_fim}"
-        for encontro in turma.encontros
-    )
-    campus = next((e.campus for e in turma.encontros if e.campus), None)
-    local = f" · {campus}" if campus else ""
-    return f"turma {turma.turma}: {encontros}{local}"
 
 
 def _truncate(value: str, size: int) -> str:
