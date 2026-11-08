@@ -226,7 +226,7 @@
 	}
 
 	/** Texto completo do bloco — o que não coube no espaço visível vai no `title`. */
-	function legenda({ item, session, conflicting }: Bloco): string {
+	function legenda({ item, session, conflicting }: Bloco, escolhivel = true): string {
 		const { course, turma } = item;
 		const partes = [
 			`${course.name} (${course.code})`,
@@ -236,6 +236,7 @@
 		if (turma.campus) partes.push(turma.campus);
 		if (turma.local) partes.push(turma.local);
 		if (conflicting) partes.push('conflito de horário');
+		if (!escolhivel) partes.push('única turma ofertada');
 		return partes.join(' · ');
 	}
 
@@ -312,13 +313,17 @@
 					{#each blocos as bloco (`${bloco.item.course.code}-${bloco.session.start}-${bloco.session.end}`)}
 						{@const { course, turma, color } = bloco.item}
 						{@const { start, end } = bloco.session}
+						<!-- Arrastar é escolher turma: uma disciplina com uma única turma
+						     não tem para onde trocar, então o bloco não anuncia interatividade
+						     que não existe. -->
+						{@const escolhivel = onescolher && course.turmas.length > 1}
 						<div
-							draggable={onescolher ? 'true' : undefined}
-							class="absolute overflow-hidden rounded-none border-solid px-1.5 py-1 select-none {onescolher
+							draggable={escolhivel ? 'true' : undefined}
+							class="absolute overflow-hidden rounded-none border-solid px-1.5 py-1 select-none {escolhivel
 								? arrastando === course.code
 									? 'cursor-grabbing opacity-50'
 									: 'cursor-grab'
-									: ''} {piscando === course.code ? 'troca-flash' : ''}"
+									: 'cursor-default'} {piscando === course.code ? 'troca-flash' : ''}"
 							style:top="{topo(start)}px"
 							style:height="{(end - start) * pxPerMin - 2}px"
 							style:left="calc({(bloco.lane / bloco.lanes) * 100}% + 2px)"
@@ -327,10 +332,11 @@
 							style:border-width="{bloco.conflicting ? 2 : 1}px"
 							style:border-color={bloco.conflicting ? CONFLICT_BORDER : color.border}
 							style:color={color.text}
-							title={legenda(bloco)}
+							title={legenda(bloco, escolhivel)}
 							ondragstart={(event) => iniciarArrasto(event, course.code)}
 							ondragend={encerrarArrasto}
 							onpointerdown={(event) => {
+								if (!escolhivel) return;
 								origemPressao = 'bloco';
 								posPressao = { x: event.clientX, y: event.clientY };
 								iniciarPressao(course.code);
