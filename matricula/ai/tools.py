@@ -81,6 +81,46 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             "additionalProperties": False,
         },
     },
+    {
+        "type": "function",
+        "name": "adicionar_disciplina",
+        "description": "Adiciona uma disciplina à grade do aluno. Se a turma "
+        "não for informada, escolhe a primeira turma sem conflito.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "sigla": {"type": "string"},
+                "turma": {"type": "string"},
+            },
+            "required": ["sigla"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "trocar_turma",
+        "description": "Troca a turma de uma disciplina que já está na grade.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "sigla": {"type": "string"},
+                "turma": {"type": "string"},
+            },
+            "required": ["sigla", "turma"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "type": "function",
+        "name": "remover_disciplina",
+        "description": "Remove uma disciplina da grade do aluno.",
+        "parameters": {
+            "type": "object",
+            "properties": {"sigla": {"type": "string"}},
+            "required": ["sigla"],
+            "additionalProperties": False,
+        },
+    },
 ]
 
 
@@ -91,7 +131,7 @@ class AnalysisTools:
         self, analise: Analise, plano: list[dict[str, Any]] | None = None
     ) -> None:
         self._analise = analise
-        self._plano = plano or []
+        self._plano = plano if plano is not None else []
         self._por_sigla = {
             oferta.disciplina.sigla: oferta for oferta in analise.ofertas
         }
@@ -101,7 +141,14 @@ class AnalysisTools:
             "detalhar_disciplina": self.detalhar_disciplina,
             "listar_turmas": self.listar_turmas,
             "estado_da_grade": self.estado_da_grade,
+            "adicionar_disciplina": self.adicionar_disciplina,
+            "trocar_turma": self.trocar_turma,
+            "remover_disciplina": self.remover_disciplina,
         }
+
+    @property
+    def plano(self) -> list[dict[str, Any]]:
+        return self._plano
 
     def call(self, name: str, arguments: str | None) -> str:
         acao = self._acoes.get(name)
@@ -268,6 +315,198 @@ class AnalysisTools:
             "conflitos": conflitos,
             "invalidas": invalidas,
         }
+
+    def adicionar_disciplina(
+        self, sigla: str, turma: str | None = None
+    ) -> dict[str, Any]:
+        code = sigla.strip().upper()
+        oferta = self._por_sigla.get(code)
+        if oferta is None:
+            return {
+                "ok": False,
+                "erro": f"disciplina {sigla} não está na lista de possibilidades",
+            }
+
+        if any(
+            str(escolha.get("code") or "").strip().upper() == code
+            for escolha in self._plano
+        ):
+            return {
+                "ok": False,
+                "erro": f"{code} já está na grade",
+                "plano": _plano_copia(self._plano),
+            }
+
+        if oferta.estado is not Estado.OFERTADA:
+            return {
+                "ok": False,
+                "erro": f"{code} não está ofertada neste período",
+                "estado": oferta.estado.value,
+            }
+
+        if not oferta.turmas:
+            return {"ok": False, "erro": f"{code} não tem turmas neste período"}
+
+        if turma:
+            escolhida = next(
+                (t for t in oferta.turmas if t.turma == turma.strip()), None
+            )
+            if escolhida is None:
+                return {
+                    "ok": False,
+                    "erro": f"turma {turma} não encontrada",
+                    "turmas": [_turma_dict(t) for t in oferta.turmas],
+                }
+        else:
+            escolhida = next(
+                (
+                    t
+                    for t in oferta.turmas
+                    if not self._conflitos_da_turma(t, code)
+                ),
+                None,
+            )
+            if escolhida is None:
+                return {
+                    "ok": False,
+                    "erro": "todas as turmas conflitam com a grade atual; "
+                    "escolha uma turma",
+                    "turmas": [_turma_dict(t) for t in oferta.turmas],
+                    "conflitos": self.estado_da_grade()["conflitos"],
+                }
+
+        self._plano.append(
+            {"code": oferta.disciplina.sigla, "letter": escolhida.turma}
+        )
+        estado = self.estado_da_grade()
+        return {
+            "ok": True,
+            "acao": "adicionada",
+            "sigla": oferta.disciplina.sigla,
+            "turma": escolhida.turma,
+            "plano": _plano_copia(self._plano),
+            "conflitos": estado["conflitos"],
+            "total_creditos": estado["total_creditos"],
+        }
+
+    def trocar_turma(self, sigla: str, turma: str) -> dict[str, Any]:
+        code = sigla.strip().upper()
+        escolha = next(
+            (
+                e
+                for e in self._plano
+                if str(e.get("code") or "").strip().upper() == code
+            ),
+            None,
+        )
+        if escolha is None:
+            return {
+                "ok": False,
+                "erro": f"{code} não está na grade; use adicionar_disciplina",
+            }
+
+        oferta = self._por_sigla.get(code)
+        if oferta is None:
+            return {
+                "ok": False,
+                "erro": f"{code} não está na lista de possibilidades",
+            }
+
+        nova = next((t for t in oferta.turmas if t.turma == turma.strip()), None)
+        if nova is None:
+            return {
+                "ok": False,
+                "erro": f"turma {turma} não encontrada",
+                "turmas": [_turma_dict(t) for t in oferta.turmas],
+            }
+
+        escolha["letter"] = nova.turma
+        estado = self.estado_da_grade()
+        return {
+            "ok": True,
+            "acao": "turma_alterada",
+            "sigla": code,
+            "turma": nova.turma,
+            "plano": _plano_copia(self._plano),
+            "conflitos": estado["conflitos"],
+            "total_creditos": estado["total_creditos"],
+        }
+
+    def remover_disciplina(self, sigla: str) -> dict[str, Any]:
+        code = sigla.strip().upper()
+        antes = len(self._plano)
+        self._plano[:] = [
+            escolha
+            for escolha in self._plano
+            if str(escolha.get("code") or "").strip().upper() != code
+        ]
+        removida = len(self._plano) != antes
+        estado = self.estado_da_grade()
+        return {
+            "ok": removida,
+            "acao": "removida" if removida else "nao_encontrada",
+            "sigla": code,
+            "plano": _plano_copia(self._plano),
+            "conflitos": estado["conflitos"],
+            "total_creditos": estado["total_creditos"],
+        }
+
+    def _conflitos_da_turma(
+        self, turma: Turma, ignorar: str
+    ) -> list[dict[str, Any]]:
+        candidato = _faixas(turma)
+        if not candidato:
+            return []
+
+        conflitos = []
+        for escolha in self._plano:
+            code = str(escolha.get("code") or "").strip().upper()
+            if code == ignorar:
+                continue
+            oferta = self._por_sigla.get(code)
+            if oferta is None:
+                continue
+            atual = next(
+                (t for t in oferta.turmas if t.turma == escolha.get("letter")),
+                None,
+            )
+            if atual is None:
+                continue
+            for dia_a, inicio_a, fim_a in candidato:
+                for dia_b, inicio_b, fim_b in _faixas(atual):
+                    if dia_a != dia_b:
+                        continue
+                    if inicio_a < fim_b and inicio_b < fim_a:
+                        conflitos.append(
+                            {
+                                "a": {"sigla": code, "turma": atual.turma},
+                                "b": {
+                                    "sigla": oferta.disciplina.sigla,
+                                    "turma": turma.turma,
+                                },
+                                "dia": DIAS.get(dia_a, str(dia_a)),
+                                "inicio": _hhmm(max(inicio_a, inicio_b)),
+                                "fim": _hhmm(min(fim_a, fim_b)),
+                            }
+                        )
+        return conflitos
+
+
+def _faixas(turma: Turma) -> list[tuple[int, int, int]]:
+    faixas = []
+    for encontro in turma.encontros:
+        if encontro.dia_semana is None:
+            continue
+        inicio = to_minutes(encontro.hora_inicio)
+        fim = to_minutes(encontro.hora_fim)
+        if inicio is None or fim is None or fim <= inicio:
+            continue
+        faixas.append((encontro.dia_semana, inicio, fim))
+    return faixas
+
+
+def _plano_copia(plano: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [dict(escolha) for escolha in plano]
 
 
 def _hhmm(minutos: int) -> str:

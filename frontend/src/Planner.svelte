@@ -27,6 +27,7 @@
 	let pronto = $state(false);
 	let salvando = $state(false);
 	let salvo = $state(true);
+	let ultimoPlano = $state('');
 	const grade = new Grade();
 
 	onMount(async () => {
@@ -40,6 +41,7 @@
 				if (course) grade.adicionarCadeira(course, escolha.letter);
 			}
 
+			ultimoPlano = serializar(data.plano);
 			dados = data;
 		} catch (error) {
 			erro = error instanceof Error ? error.message : 'Não foi possível carregar o planejador.';
@@ -48,6 +50,35 @@
 		}
 	});
 
+	onMount(() => {
+		const handler = (event: Event) => {
+			const detalhe = (event as CustomEvent<{ plano?: { code: string; letter: string }[] }>)
+				.detail;
+			if (detalhe?.plano) aplicarPlano(detalhe.plano);
+		};
+
+		window.addEventListener('plano-atualizado', handler);
+		return () => window.removeEventListener('plano-atualizado', handler);
+	});
+
+	function serializar(plano: { code: string; letter: string }[]): string {
+		return JSON.stringify(plano);
+	}
+
+	/** Aplica um plano alterado pelo chat sem disparar um PUT de volta. */
+	function aplicarPlano(plano: { code: string; letter: string }[]): void {
+		if (!dados) return;
+
+		ultimoPlano = serializar(plano);
+		salvo = true;
+		grade.limpar();
+
+		for (const escolha of plano) {
+			const course = dados.cursos.find((c) => c.code === escolha.code);
+			if (course) grade.adicionarCadeira(course, escolha.letter);
+		}
+	}
+
 	let timer: ReturnType<typeof setTimeout> | undefined;
 
 	$effect(() => {
@@ -55,7 +86,8 @@
 			code: item.course.code,
 			letter: item.turma.letter
 		}));
-		if (!pronto || !dados) return;
+		const chave = serializar(escolhas);
+		if (!pronto || !dados || chave === ultimoPlano) return;
 
 		salvo = false;
 		clearTimeout(timer);
@@ -68,6 +100,7 @@
 					body: JSON.stringify({ escolhas })
 				});
 				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+				ultimoPlano = chave;
 				salvo = true;
 			} catch {
 				salvo = false;

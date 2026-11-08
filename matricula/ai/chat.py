@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import AsyncIterator, Iterable
 from typing import Any
@@ -108,7 +109,10 @@ class ChatService:
             if text:
                 yield {"type": "reset"}
             input_items.extend(_item_dict(item) for item in output)
+            antes = _plano_chave(tools.plano)
             input_items.extend(_tool_outputs(calls, tools))
+            if _plano_chave(tools.plano) != antes:
+                yield {"type": "plano", "plano": _plano_copia(tools.plano)}
 
         yield {
             "type": "done",
@@ -229,3 +233,11 @@ def _call_parts(call: Any) -> tuple[str, str, str]:
         getattr(call, "name", ""),
         getattr(call, "arguments", None) or "{}",
     )
+
+
+def _plano_chave(plano: list[dict[str, Any]]) -> str:
+    return json.dumps(plano, sort_keys=True, ensure_ascii=False)
+
+
+def _plano_copia(plano: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [dict(escolha) for escolha in plano]

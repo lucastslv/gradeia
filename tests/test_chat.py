@@ -238,11 +238,63 @@ def test_tool_reads_current_plan(possibilidade_html: bytes) -> None:
     assert '"turma": "A"' in saidas[0]["output"]
 
 
-async def collect_stream(client, analise_, history=None, pergunta="oi"):
+def test_stream_emits_plan_event(possibilidade_html: bytes) -> None:
+    chamada = SimpleNamespace(
+        type="function_call",
+        id="fc_1",
+        call_id="call_1",
+        name="adicionar_disciplina",
+        arguments='{"sigla":"INF01113"}',
+    )
+    client = FakeClient(
+        [
+            [completed([chamada], "")],
+            [completed([message_item("Adicionei.")], "Adicionei.")],
+        ]
+    )
+    plano: list[dict] = []
+
+    eventos = asyncio.run(
+        collect_stream(
+            client,
+            analise(possibilidade_html),
+            pergunta="adicione INF01113",
+            plano=plano,
+        )
+    )
+
+    planos = [evento for evento in eventos if evento["type"] == "plano"]
+    assert planos[0]["plano"] == [{"code": "INF01113", "letter": "A"}]
+    assert plano == [{"code": "INF01113", "letter": "A"}]
+    assert eventos[-1] == {"type": "done", "text": "Adicionei."}
+
+
+def test_reply_mutates_plan(possibilidade_html: bytes) -> None:
+    client = FakeClient(
+        [
+            tool_response("adicionar_disciplina", '{"sigla":"INF01113"}'),
+            content_response("ok"),
+        ]
+    )
+    plano: list[dict] = []
+
+    answer = asyncio.run(
+        ChatService(client, "deepseek-flash").reply(
+            analise(possibilidade_html), [], "adicione", plano=plano
+        )
+    )
+
+    assert answer == "ok"
+    assert plano == [{"code": "INF01113", "letter": "A"}]
+
+
+async def collect_stream(client, analise_, history=None, pergunta="oi", plano=None):
     service = ChatService(client, "deepseek-flash")
     return [
         evento
-        async for evento in service.stream_reply(analise_, history or [], pergunta)
+        async for evento in service.stream_reply(
+            analise_, history or [], pergunta, plano=plano
+        )
     ]
 
 

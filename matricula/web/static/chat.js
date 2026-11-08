@@ -24,6 +24,14 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
+  function dispatchPlan(plano) {
+    if (Array.isArray(plano)) {
+      window.dispatchEvent(
+        new CustomEvent("plano-atualizado", { detail: { plano } })
+      );
+    }
+  }
+
   function handleEvent(raw, assistant) {
     let event = "message";
     const dataLines = [];
@@ -47,9 +55,12 @@
       assistant.textContent += data.text || "";
     } else if (event === "reset") {
       assistant.textContent = "";
+    } else if (event === "plano") {
+      dispatchPlan(data.plano);
     } else if (event === "done" || event === "error") {
       assistant.classList.remove("whitespace-pre-wrap");
       assistant.innerHTML = data.html || "";
+      dispatchPlan(data.plano);
     }
     scroll();
   }

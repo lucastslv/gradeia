@@ -304,3 +304,55 @@ def test_chat_receives_current_plan(tmp_path, possibilidade_html: bytes) -> None
     app.dependency_overrides.clear()
 
     assert capturado["plano"] == [{"code": "INF01113", "letter": "A"}]
+
+
+class WritingChat:
+    async def reply(self, analise, history, pergunta, plano=None):
+        plano.append({"code": "INF01113", "letter": "A"})
+        return "adicionei"
+
+    async def stream_reply(self, analise, history, pergunta, plano=None):
+        plano.append({"code": "INF01113", "letter": "A"})
+        yield {"type": "plano", "plano": [dict(item) for item in plano]}
+        yield {"type": "done", "text": "adicionei"}
+
+
+def test_chat_saves_plan_after_write(tmp_path, possibilidade_html: bytes) -> None:
+    store = AnalysisStore(tmp_path / "analises.db")
+    app.dependency_overrides[get_api] = lambda: FakeApi()
+    app.dependency_overrides[get_store] = lambda: store
+    app.dependency_overrides[get_chat_service] = lambda: WritingChat()
+
+    with TestClient(app) as test_client:
+        response = upload(test_client, possibilidade_html)
+        ident = analise_id(response)
+        test_client.post(
+            f"/analise/{ident}/chat", data={"mensagem": "adicione INF01113"}
+        )
+
+    app.dependency_overrides.clear()
+
+    assert store.get_plano(ident) == [{"code": "INF01113", "letter": "A"}]
+
+
+def test_chat_stream_emits_and_saves_plan(
+    tmp_path, possibilidade_html: bytes
+) -> None:
+    store = AnalysisStore(tmp_path / "analises.db")
+    app.dependency_overrides[get_api] = lambda: FakeApi()
+    app.dependency_overrides[get_store] = lambda: store
+    app.dependency_overrides[get_chat_service] = lambda: WritingChat()
+
+    with TestClient(app) as test_client:
+        response = upload(test_client, possibilidade_html)
+        ident = analise_id(response)
+        stream = test_client.post(
+            f"/analise/{ident}/chat/stream",
+            data={"mensagem": "adicione INF01113"},
+        )
+
+    app.dependency_overrides.clear()
+
+    assert "event: plano" in stream.text
+    assert "INF01113" in stream.text
+    assert store.get_plano(ident) == [{"code": "INF01113", "letter": "A"}]

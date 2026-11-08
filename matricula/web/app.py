@@ -177,7 +177,8 @@ def api_salvar_plano(
 
 
 @app.post("/analise/{analise_id}/reverificar")
-def reverificar(    analise_id: str,
+def reverificar(
+    analise_id: str,
     api: UfrgsApi = Depends(get_api),
     store: AnalysisStore = Depends(get_store),
 ):
@@ -211,6 +212,7 @@ async def chat(
                 logger.exception("falha ao consultar o modelo")
                 resposta = "Não consegui falar com o modelo agora. Tente novamente."
         store.add_message(analise_id, "assistant", resposta)
+        store.save_plano(analise_id, plano)
 
     return _render(
         request,
@@ -244,7 +246,9 @@ async def chat_stream(
         if service is None:
             resposta = CHAT_NAO_CONFIGURADO
             store.add_message(analise_id, "assistant", resposta)
-            yield _sse("done", {"html": str(render_markdown(resposta))})
+            yield _sse(
+                "done", {"html": str(render_markdown(resposta)), "plano": plano}
+            )
             return
 
         concluido = False
@@ -257,29 +261,45 @@ async def chat_stream(
                     yield _sse("delta", {"text": evento.get("text", "")})
                 elif tipo == "reset":
                     yield _sse("reset", {})
+                elif tipo == "plano":
+                    novo = evento.get("plano") or []
+                    store.save_plano(analise_id, novo)
+                    yield _sse("plano", {"plano": novo})
                 elif tipo == "done":
                     resposta = evento.get("text") or CHAT_NAO_CONFIGURADO
                     store.add_message(analise_id, "assistant", resposta)
-                    yield _sse("done", {"html": str(render_markdown(resposta))})
+                    yield _sse(
+                        "done",
+                        {"html": str(render_markdown(resposta)), "plano": plano},
+                    )
                     concluido = True
                     return
                 elif tipo == "error":
                     resposta = evento.get("text") or "Não consegui concluir a resposta."
                     store.add_message(analise_id, "assistant", resposta)
-                    yield _sse("error", {"html": str(render_markdown(resposta))})
+                    yield _sse(
+                        "error",
+                        {"html": str(render_markdown(resposta)), "plano": plano},
+                    )
                     concluido = True
                     return
         except Exception:
             logger.exception("falha no streaming do chat")
             resposta = "Não consegui falar com o modelo agora. Tente novamente."
             store.add_message(analise_id, "assistant", resposta)
-            yield _sse("error", {"html": str(render_markdown(resposta))})
+            yield _sse(
+                "error", {"html": str(render_markdown(resposta)), "plano": plano}
+            )
             concluido = True
+        finally:
+            store.save_plano(analise_id, plano)
 
         if not concluido:
             resposta = "Não consegui concluir a resposta. Tente novamente."
             store.add_message(analise_id, "assistant", resposta)
-            yield _sse("done", {"html": str(render_markdown(resposta))})
+            yield _sse(
+                "done", {"html": str(render_markdown(resposta)), "plano": plano}
+            )
 
     return StreamingResponse(
         eventos(),

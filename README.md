@@ -79,11 +79,12 @@ servidor (`conversation` e `previous_response_id` não são suportados). O
 histórico é mantido localmente, em SQLite. O chat usa a **Responses API**
 (`/responses`), com `reasoning.effort = "none"` para reduzir latência e custo.
 
-O modelo recebe a análise como contexto e pode chamar ferramentas (`resumo`,
-`listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`, `estado_da_grade`).
-A última lê a grade atual salva no SQLite: disciplinas/turmas escolhidas,
-créditos e conflitos de horário. Sem a chave, o painel fica desabilitado e o
-resto do app funciona normalmente.
+O modelo recebe a análise como contexto e pode chamar ferramentas de leitura
+(`resumo`, `listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`,
+`estado_da_grade`) e de escrita (`adicionar_disciplina`, `trocar_turma`,
+`remover_disciplina`). O chat altera o plano no SQLite e a ilha recebe um evento
+SSE `plano` para atualizar a grade na hora. Sem a chave, o painel fica
+desabilitado e o resto do app funciona normalmente.
 
 A resposta é transmitida por **SSE** (`POST /analise/{id}/chat/stream`): o texto
 aparece enquanto é gerado e, ao final, é renderizado em Markdown. O histórico é

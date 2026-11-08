@@ -182,3 +182,175 @@ def test_call_estado_da_grade(analise) -> None:
     )
 
     assert resultado["total_disciplinas"] == 1
+
+
+def turma(sigla: str, letter: str, inicio: str, fim: str, dia: int = 2) -> Turma:
+    return Turma(
+        sigla=sigla,
+        nome=sigla,
+        turma=letter,
+        encontros=[
+            Encontro(dia_semana=dia, hora_inicio=inicio, hora_fim=fim)
+        ],
+    )
+
+
+def analise_dupla(possibilidade_html: bytes):
+    possibilidades = parse_possibilidades(possibilidade_html)
+    return analyze(
+        possibilidades,
+        "305",
+        544,
+        [
+            turma("INF01113", "A", "08:30", "10:10"),
+            turma("INF05028", "A", "09:30", "11:10"),
+            turma("INF05028", "B", "13:30", "15:10"),
+        ],
+    )
+
+
+def test_adicionar_disciplina_muta_plano(analise) -> None:
+    plano: list[dict] = []
+    tools = AnalysisTools(analise, plano=plano)
+
+    resultado = tools.adicionar_disciplina("INF01113")
+
+    assert resultado["ok"] is True
+    assert resultado["turma"] == "A"
+    assert plano == [{"code": "INF01113", "letter": "A"}]
+    assert resultado["total_creditos"] == 4
+
+
+def test_adicionar_disciplina_ja_na_grade(analise) -> None:
+    tools = AnalysisTools(
+        analise, plano=[{"code": "INF01113", "letter": "A"}]
+    )
+
+    resultado = tools.adicionar_disciplina("INF01113")
+
+    assert resultado["ok"] is False
+    assert "já está" in resultado["erro"]
+
+
+def test_adicionar_disciplina_nao_ofertada(analise) -> None:
+    resultado = AnalysisTools(analise, plano=[]).adicionar_disciplina("INF01090")
+
+    assert resultado["ok"] is False
+    assert "não está ofertada" in resultado["erro"]
+
+
+def test_adicionar_disciplina_turma_inexistente(analise) -> None:
+    resultado = AnalysisTools(analise, plano=[]).adicionar_disciplina(
+        "INF01113", "Z"
+    )
+
+    assert resultado["ok"] is False
+    assert "não encontrada" in resultado["erro"]
+
+
+def test_adicionar_disciplina_escolhe_turma_sem_conflito(
+    possibilidade_html: bytes,
+) -> None:
+    analise = analise_dupla(possibilidade_html)
+    plano = [{"code": "INF01113", "letter": "A"}]
+    tools = AnalysisTools(analise, plano=plano)
+
+    resultado = tools.adicionar_disciplina("INF05028")
+
+    assert resultado["ok"] is True
+    assert resultado["turma"] == "B"
+    assert plano[-1] == {"code": "INF05028", "letter": "B"}
+    assert resultado["conflitos"] == []
+
+
+def test_adicionar_disciplina_todas_conflitam(possibilidade_html: bytes) -> None:
+    possibilidades = parse_possibilidades(possibilidade_html)
+    analise = analyze(
+        possibilidades,
+        "305",
+        544,
+        [
+            turma("INF01113", "A", "08:30", "10:10"),
+            turma("INF05028", "A", "09:30", "11:10"),
+        ],
+    )
+    tools = AnalysisTools(
+        analise, plano=[{"code": "INF01113", "letter": "A"}]
+    )
+
+    resultado = tools.adicionar_disciplina("INF05028")
+
+    assert resultado["ok"] is False
+    assert "todas as turmas conflitam" in resultado["erro"]
+    assert resultado["turmas"][0]["turma"] == "A"
+
+
+def test_adicionar_disciplina_com_turma_conflitante(possibilidade_html: bytes) -> None:
+    possibilidades = parse_possibilidades(possibilidade_html)
+    analise = analyze(
+        possibilidades,
+        "305",
+        544,
+        [
+            turma("INF01113", "A", "08:30", "10:10"),
+            turma("INF05028", "A", "09:30", "11:10"),
+        ],
+    )
+    tools = AnalysisTools(
+        analise, plano=[{"code": "INF01113", "letter": "A"}]
+    )
+
+    resultado = tools.adicionar_disciplina("INF05028", "A")
+
+    assert resultado["ok"] is True
+    assert resultado["turma"] == "A"
+    assert resultado["conflitos"]
+
+
+def test_trocar_turma(possibilidade_html: bytes) -> None:
+    analise = analise_dupla(possibilidade_html)
+    plano = [
+        {"code": "INF01113", "letter": "A"},
+        {"code": "INF05028", "letter": "A"},
+    ]
+    tools = AnalysisTools(analise, plano=plano)
+
+    resultado = tools.trocar_turma("INF05028", "B")
+
+    assert resultado["ok"] is True
+    assert resultado["turma"] == "B"
+    assert plano[1] == {"code": "INF05028", "letter": "B"}
+    assert resultado["conflitos"] == []
+
+
+def test_trocar_turma_fora_da_grade(analise) -> None:
+    resultado = AnalysisTools(analise, plano=[]).trocar_turma("INF01113", "A")
+
+    assert resultado["ok"] is False
+    assert "não está na grade" in resultado["erro"]
+
+
+def test_remover_disciplina(analise) -> None:
+    plano = [{"code": "INF01113", "letter": "A"}]
+    tools = AnalysisTools(analise, plano=plano)
+
+    resultado = tools.remover_disciplina("INF01113")
+
+    assert resultado["ok"] is True
+    assert plano == []
+    assert resultado["total_creditos"] == 0
+
+    novamente = tools.remover_disciplina("INF01113")
+    assert novamente["ok"] is False
+
+
+def test_call_escrita(analise) -> None:
+    plano: list[dict] = []
+    resultado = json.loads(
+        AnalysisTools(analise, plano=plano).call(
+            "adicionar_disciplina", '{"sigla":"INF01113"}'
+        )
+    )
+
+    assert resultado["ok"] is True
+    assert plano == [{"code": "INF01113", "letter": "A"}]
