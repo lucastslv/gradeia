@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from matricula.core.models import Encontro, Turma
-from matricula.web.app import app, get_api, get_store
+from matricula.web.app import app, get_api, get_chat_service, get_store
 from matricula.web.store import AnalysisStore
 
 
@@ -37,11 +37,17 @@ class FakeApi:
         ]
 
 
+class FakeChatService:
+    def reply(self, analise, history, pergunta: str) -> str:
+        return f"**resposta** para: {pergunta}"
+
+
 @pytest.fixture
 def client(tmp_path):
     store = AnalysisStore(tmp_path / "analises.db")
     app.dependency_overrides[get_api] = lambda: FakeApi()
     app.dependency_overrides[get_store] = lambda: store
+    app.dependency_overrides[get_chat_service] = lambda: FakeChatService()
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
@@ -146,3 +152,44 @@ def test_rejects_empty_file(client: TestClient) -> None:
 
 def test_unknown_analysis_returns_404(client: TestClient) -> None:
     assert client.get("/analise/inexistente").status_code == 404
+
+
+def test_chat_renders_markdown_and_keeps_history(
+    client: TestClient, possibilidade_html: bytes
+) -> None:
+    response = upload(client, possibilidade_html)
+    ident = analise_id(response)
+
+    primeira = client.post(
+        f"/analise/{ident}/chat", data={"mensagem": "quais obrigatórias?"}
+    )
+
+    assert primeira.status_code == 200
+    assert "<strong>resposta</strong>" in primeira.text
+    assert "para: quais obrigatórias?" in primeira.text
+
+    segunda = client.post(f"/analise/{ident}/chat", data={"mensagem": "e as eletivas?"})
+
+    assert "para: quais obrigatórias?" in segunda.text
+    assert "para: e as eletivas?" in segunda.text
+
+
+def test_chat_without_api_key_shows_notice(
+    tmp_path, possibilidade_html: bytes
+) -> None:
+    store = AnalysisStore(tmp_path / "analises.db")
+    app.dependency_overrides[get_api] = lambda: FakeApi()
+    app.dependency_overrides[get_store] = lambda: store
+    app.dependency_overrides[get_chat_service] = lambda: None
+
+    with TestClient(app) as test_client:
+        response = upload(test_client, possibilidade_html)
+        ident = analise_id(response)
+        chat = test_client.post(
+            f"/analise/{ident}/chat", data={"mensagem": "oi"}
+        )
+
+    app.dependency_overrides.clear()
+
+    assert "Defina <code>DEEPSEEK_API_KEY</code>" in response.text
+    assert "não está configurado" in chat.text

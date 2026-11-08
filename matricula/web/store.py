@@ -8,7 +8,14 @@ import time
 import uuid
 from pathlib import Path
 
+from pydantic import BaseModel
+
 from ..core.models import Analise
+
+
+class Mensagem(BaseModel):
+    role: str
+    content: str
 
 
 class AnalysisStore:
@@ -25,6 +32,17 @@ class AnalysisStore:
                 id TEXT PRIMARY KEY,
                 payload TEXT NOT NULL,
                 updated_at REAL NOT NULL
+            )
+            """
+        )
+        self._connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mensagens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                analise_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_at REAL NOT NULL
             )
             """
         )
@@ -54,3 +72,27 @@ class AnalysisStore:
         if row is None:
             return None
         return Analise.model_validate_json(row[0])
+
+    def add_message(self, analise_id: str, role: str, content: str) -> None:
+        with self._lock:
+            self._connection.execute(
+                """
+                INSERT INTO mensagens (analise_id, role, content, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (analise_id, role, content, time.time()),
+            )
+            self._connection.commit()
+
+    def messages(self, analise_id: str, limit: int = 20) -> list[Mensagem]:
+        with self._lock:
+            rows = self._connection.execute(
+                """
+                SELECT role, content FROM mensagens
+                WHERE analise_id = ?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (analise_id, limit),
+            ).fetchall()
+        return [Mensagem(role=role, content=content) for role, content in reversed(rows)]

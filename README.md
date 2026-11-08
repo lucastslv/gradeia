@@ -38,6 +38,21 @@ uv run uvicorn matricula.web.app:app --reload
 A UI usa HTMX e Tailwind via CDN (protótipo). Para produção, gere o CSS do
 Tailwind em vez de usar o CDN.
 
+## Chat
+
+Opcional. Usa um provedor OpenAI-compatível (DeepSeek por padrão):
+
+```bash
+export DEEPSEEK_API_KEY=...
+# opcionais
+export DEEPSEEK_BASE_URL=https://api.deepseek.com
+export DEEPSEEK_MODEL=deepseek-chat
+```
+
+O modelo recebe a análise como contexto e pode chamar ferramentas (`resumo`,
+`listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`). Sem a chave, o
+painel fica desabilitado e o resto do app funciona normalmente.
+
 O HTML contém dados pessoais (nome, IP, sessão). O parser descarta esses campos;
 não versione o arquivo original. O fixture em `tests/fixtures/` é anonimizado.
 

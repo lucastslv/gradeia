@@ -17,3 +17,6 @@ wheels/
 
 # Personal input files (contain name, IP and session data)
 Aluno - Possibilidade de Matrícula.html
+
+# Secrets
+.env
