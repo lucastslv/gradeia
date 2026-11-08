@@ -185,15 +185,58 @@
 		}
 	}
 
+	/**
+	 * Arrasto do mouse via eventos de ponteiro. No Wayland o Chromium não
+	 * inicia a sessão de drag nativa (dragstart nunca chega), então a pressão
+	 * é acompanhada na janela: passar do limiar de 8px com o botão apertado
+	 * é um arrasto de fato. O dragstart nativo continua válindo onde existe
+	 * — os dois caminhos apenas acendem o mesmo modo.
+	 */
+	let arrastoNativo = false;
+	let soltarPerseguicao: (() => void) | null = null;
+
+	function acompanharArrasto(code: string): void {
+		const aoMover = (event: PointerEvent): void => {
+			if (arrastando === code || event.buttons === 0) return;
+			if (Math.hypot(event.clientX - posPressao.x, event.clientY - posPressao.y) <= 8) return;
+			cancelarPressao();
+			segurando = false;
+			arrastando = code;
+		};
+		const aoSoltar = (): void => {
+			soltarPerseguicao?.();
+			/* O fantasma sob o ponteiro já escolheu (bubble: ele roda antes);
+			 * soltar fora de um fantasma encerra o arrasto aberto. */
+			if (arrastando === code && !segurando && !arrastoNativo) encerrarArrasto();
+		};
+		const aoCancelar = (): void => {
+			soltarPerseguicao?.();
+			/* cancel com arrasto nativo a caminho: o dragstart cuida do resto. */
+			if (!arrastoNativo) fecharPressao();
+		};
+		window.addEventListener('pointermove', aoMover);
+		window.addEventListener('pointerup', aoSoltar);
+		window.addEventListener('pointercancel', aoCancelar);
+		soltarPerseguicao = () => {
+			window.removeEventListener('pointermove', aoMover);
+			window.removeEventListener('pointerup', aoSoltar);
+			window.removeEventListener('pointercancel', aoCancelar);
+			soltarPerseguicao = null;
+		};
+	}
+
 	function iniciarArrasto(event: DragEvent, code: string): void {
+		arrastoNativo = true;
 		cancelarPressao();
 		segurando = false;
 		arrastando = code;
+		soltarPerseguicao?.();
 		event.dataTransfer?.setData('text/plain', code);
 		if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
 	}
 
 	function encerrarArrasto(): void {
+		arrastoNativo = false;
 		arrastando = null;
 		segurando = false;
 	}
@@ -340,6 +383,7 @@
 								origemPressao = 'bloco';
 								posPressao = { x: event.clientX, y: event.clientY };
 								iniciarPressao(course.code);
+							acompanharArrasto(course.code);
 								soltarCaptura(event);
 							}}
 							onpointerup={cancelarPressao}
@@ -381,7 +425,7 @@
 									if (arrastando) escolherFantasma(arrastando, f.letter);
 								}}
 								onclick={(event) =>
-								segurando && arrastando && podeEscolherNoToque(event)
+								arrastando && podeEscolherNoToque(event)
 									? escolherFantasma(arrastando, f.letter)
 									: undefined}
 							onpointerdown={(event) => {
@@ -389,7 +433,7 @@
 								posPressao = { x: event.clientX, y: event.clientY };
 							}}
 							onpointerup={(event) => {
-								if (segurando && arrastando && podeEscolherNoToque(event)) {
+								if (arrastando && podeEscolherNoToque(event)) {
 									escolherFantasma(arrastando, f.letter);
 								}
 							}}
