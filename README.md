@@ -69,6 +69,7 @@ no shell). Variáveis aceitas:
 DEEPSEEK_API_KEY=...
 DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_MODEL=deepseek-flash
+DEEPSEEK_TIMEOUT=120
 ```
 
 `deepseek-chat` foi descontinuado em 2026-07-24. Use `deepseek-flash` (padrão)
@@ -82,9 +83,9 @@ histórico é mantido localmente, em SQLite. O chat usa a **Responses API**
 O modelo recebe a análise como contexto e pode chamar ferramentas de leitura
 (`resumo`, `listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`,
 `estado_da_grade`) e de escrita (`adicionar_disciplina`, `trocar_turma`,
-`remover_disciplina`). O chat altera o plano no SQLite e a ilha recebe um evento
-SSE `plano` para atualizar a grade na hora. Sem a chave, o painel fica
-desabilitado e o resto do app funciona normalmente.
+`remover_disciplina`, `montar_grade_sem_conflito`). O chat altera o plano no
+SQLite e a ilha recebe um evento SSE `plano` para atualizar a grade na hora.
+Sem a chave, o painel fica desabilitado e o resto do app funciona normalmente.
 
 A resposta é transmitida por **SSE** (`POST /analise/{id}/chat/stream`): o texto
 aparece enquanto é gerado e, ao final, é renderizado em Markdown. O histórico é

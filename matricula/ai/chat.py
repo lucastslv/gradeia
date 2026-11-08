@@ -13,8 +13,12 @@ from .tools import TOOL_SCHEMAS, AnalysisTools
 
 logger = logging.getLogger(__name__)
 
-MAX_STEPS = 4
+MAX_STEPS = 8
 FALLBACK = "Não consegui formular uma resposta agora. Tente reformular a pergunta."
+STEP_LIMIT_FALLBACK = (
+    f"Não consegui concluir em {MAX_STEPS} etapas. "
+    "Tente uma pergunta mais específica ou peça para montar a grade."
+)
 # A Responses API é stateless e o thinking vem ligado por padrão. Desligamos
 # para não pagar latência/tokens de raciocínio num chat de consulta.
 REASONING_DISABLED = {"effort": "none"}
@@ -37,7 +41,8 @@ class ChatService:
         tools = AnalysisTools(analise, plano=plano)
         input_items = _input_items(history, pergunta)
 
-        for _ in range(MAX_STEPS):
+        for step in range(MAX_STEPS):
+            logger.info("chat step %s/%s", step + 1, MAX_STEPS)
             response = await self._client.responses.create(
                 **_request(self._model, analise, input_items)
             )
@@ -49,10 +54,7 @@ class ChatService:
             input_items.extend(_item_dict(item) for item in output)
             input_items.extend(_tool_outputs(calls, tools))
 
-        return (
-            "Não consegui concluir a análise em tempo hábil. "
-            "Tente uma pergunta mais específica."
-        )
+        return STEP_LIMIT_FALLBACK
 
     async def stream_reply(
         self,
@@ -65,7 +67,8 @@ class ChatService:
         tools = AnalysisTools(analise, plano=plano)
         input_items = _input_items(history, pergunta)
 
-        for _ in range(MAX_STEPS):
+        for step in range(MAX_STEPS):
+            logger.info("chat stream step %s/%s", step + 1, MAX_STEPS)
             stream = await self._client.responses.create(
                 **_request(self._model, analise, input_items),
                 stream=True,
@@ -116,8 +119,7 @@ class ChatService:
 
         yield {
             "type": "done",
-            "text": "Não consegui concluir a análise em tempo hábil. "
-            "Tente uma pergunta mais específica.",
+            "text": STEP_LIMIT_FALLBACK,
         }
 
 

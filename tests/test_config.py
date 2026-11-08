@@ -11,17 +11,20 @@ def test_defaults(monkeypatch) -> None:
 
     assert settings.model == "deepseek-flash"
     assert settings.base_url == "https://api.deepseek.com"
+    assert settings.timeout == 120.0
     assert settings.configured is False
 
 
 def test_reads_environment(monkeypatch) -> None:
     monkeypatch.setenv("DEEPSEEK_API_KEY", "chave")
     monkeypatch.setenv("DEEPSEEK_MODEL", "deepseek-v4-pro")
+    monkeypatch.setenv("DEEPSEEK_TIMEOUT", "45")
 
     settings = Settings.from_env(load_env_file=False)
 
     assert settings.configured is True
     assert settings.model == "deepseek-v4-pro"
+    assert settings.timeout == 45.0
 
 
 def test_loads_env_file(tmp_path, monkeypatch) -> None:

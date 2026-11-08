@@ -121,6 +121,25 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             "additionalProperties": False,
         },
     },
+    {
+        "type": "function",
+        "name": "montar_grade_sem_conflito",
+        "description": "Monta uma grade sem conflitos de horário, priorizando "
+        "disciplinas obrigatórias, etapas iniciais e mais créditos. Adiciona "
+        "disciplinas ofertadas até o limite.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "max_disciplinas": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 12,
+                },
+                "incluir_eletivas": {"type": "boolean"},
+            },
+            "additionalProperties": False,
+        },
+    },
 ]
 
 
@@ -144,6 +163,7 @@ class AnalysisTools:
             "adicionar_disciplina": self.adicionar_disciplina,
             "trocar_turma": self.trocar_turma,
             "remover_disciplina": self.remover_disciplina,
+            "montar_grade_sem_conflito": self.montar_grade_sem_conflito,
         }
 
     @property
@@ -449,6 +469,94 @@ class AnalysisTools:
             "plano": _plano_copia(self._plano),
             "conflitos": estado["conflitos"],
             "total_creditos": estado["total_creditos"],
+        }
+
+    def montar_grade_sem_conflito(
+        self, max_disciplinas: int = 6, incluir_eletivas: bool = True
+    ) -> dict[str, Any]:
+        try:
+            limite = int(max_disciplinas)
+        except (TypeError, ValueError):
+            limite = 6
+        limite = max(1, min(limite, 12))
+
+        if len(self._plano) >= limite:
+            estado = self.estado_da_grade()
+            return {
+                "ok": True,
+                "adicionadas": [],
+                "aviso": "limite já atingido",
+                "plano": _plano_copia(self._plano),
+                "conflitos": estado["conflitos"],
+                "total_creditos": estado["total_creditos"],
+                "total_disciplinas": estado["total_disciplinas"],
+            }
+
+        atuais = {
+            str(escolha.get("code") or "").strip().upper()
+            for escolha in self._plano
+        }
+        candidatas = []
+        for oferta in self._analise.ofertas:
+            disciplina = oferta.disciplina
+            if disciplina.sigla in atuais:
+                continue
+            if oferta.estado is not Estado.OFERTADA or not oferta.turmas:
+                continue
+            if (
+                not incluir_eletivas
+                and normalize_name(disciplina.carater) != "OBRIGATORIA"
+            ):
+                continue
+            candidatas.append(oferta)
+
+        candidatas.sort(
+            key=lambda oferta: (
+                0
+                if normalize_name(oferta.disciplina.carater) == "OBRIGATORIA"
+                else 1,
+                oferta.disciplina.etapa
+                if oferta.disciplina.etapa is not None
+                else 99,
+                -oferta.disciplina.creditos,
+                oferta.disciplina.sigla,
+            )
+        )
+
+        adicionadas = []
+        for oferta in candidatas:
+            if len(self._plano) >= limite:
+                break
+            disciplina = oferta.disciplina
+            escolhida = next(
+                (
+                    turma
+                    for turma in oferta.turmas
+                    if not self._conflitos_da_turma(turma, disciplina.sigla)
+                ),
+                None,
+            )
+            if escolhida is None:
+                continue
+            self._plano.append(
+                {"code": disciplina.sigla, "letter": escolhida.turma}
+            )
+            adicionadas.append(
+                {
+                    "sigla": disciplina.sigla,
+                    "nome": disciplina.nome,
+                    "turma": escolhida.turma,
+                }
+            )
+
+        estado = self.estado_da_grade()
+        return {
+            "ok": True,
+            "adicionadas": adicionadas,
+            "plano": _plano_copia(self._plano),
+            "conflitos": estado["conflitos"],
+            "total_creditos": estado["total_creditos"],
+            "total_disciplinas": estado["total_disciplinas"],
         }
 
     def _conflitos_da_turma(

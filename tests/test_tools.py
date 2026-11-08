@@ -354,3 +354,87 @@ def test_call_escrita(analise) -> None:
 
     assert resultado["ok"] is True
     assert plano == [{"code": "INF01113", "letter": "A"}]
+
+
+def analise_para_montar(possibilidade_html: bytes):
+    possibilidades = parse_possibilidades(possibilidade_html)
+    return analyze(
+        possibilidades,
+        "305",
+        544,
+        [
+            turma("INF01113", "A", "08:30", "10:10"),
+            turma("INF05028", "A", "09:30", "11:10"),
+            turma("INF05028", "B", "08:30", "10:10", dia=3),
+            turma("MAT01032", "U", "13:30", "15:10", dia=3),
+            turma("INF01090", "N", "08:30", "10:10", dia=4),
+        ],
+    )
+
+
+def test_montar_grade_prioriza_obrigatorias(possibilidade_html: bytes) -> None:
+    analise = analise_para_montar(possibilidade_html)
+    plano: list[dict] = []
+    tools = AnalysisTools(analise, plano=plano)
+
+    resultado = tools.montar_grade_sem_conflito(
+        max_disciplinas=3, incluir_eletivas=False
+    )
+
+    assert resultado["ok"] is True
+    assert resultado["total_disciplinas"] == 3
+    assert resultado["conflitos"] == []
+    assert [item["code"] for item in plano] == [
+        "INF01113",
+        "INF05028",
+        "MAT01032",
+    ]
+    assert plano[1]["letter"] == "B"
+
+
+def test_montar_grade_inclui_eletivas(possibilidade_html: bytes) -> None:
+    analise = analise_para_montar(possibilidade_html)
+    plano: list[dict] = []
+    tools = AnalysisTools(analise, plano=plano)
+
+    resultado = tools.montar_grade_sem_conflito(
+        max_disciplinas=4, incluir_eletivas=True
+    )
+
+    assert resultado["total_disciplinas"] == 4
+    assert any(item["code"] == "INF01090" for item in plano)
+
+
+def test_montar_grade_respeita_limite(possibilidade_html: bytes) -> None:
+    analise = analise_para_montar(possibilidade_html)
+    plano: list[dict] = []
+    tools = AnalysisTools(analise, plano=plano)
+
+    tools.montar_grade_sem_conflito(max_disciplinas=2)
+
+    assert len(plano) == 2
+
+
+def test_montar_grade_parte_do_plano_atual(possibilidade_html: bytes) -> None:
+    analise = analise_para_montar(possibilidade_html)
+    plano = [{"code": "INF01113", "letter": "A"}]
+    tools = AnalysisTools(analise, plano=plano)
+
+    resultado = tools.montar_grade_sem_conflito(max_disciplinas=3)
+
+    assert resultado["total_disciplinas"] == 3
+    assert resultado["conflitos"] == []
+    assert len(plano) == 3
+
+
+def test_call_montar_grade(possibilidade_html: bytes) -> None:
+    analise = analise_para_montar(possibilidade_html)
+    plano: list[dict] = []
+    resultado = json.loads(
+        AnalysisTools(analise, plano=plano).call(
+            "montar_grade_sem_conflito", '{"max_disciplinas":2}'
+        )
+    )
+
+    assert resultado["total_disciplinas"] == 2
+    assert len(plano) == 2

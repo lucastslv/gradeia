@@ -68,7 +68,12 @@ def get_chat_service() -> ChatService | None:
 
     from openai import AsyncOpenAI
 
-    client = AsyncOpenAI(api_key=settings.api_key, base_url=settings.base_url)
+    client = AsyncOpenAI(
+        api_key=settings.api_key,
+        base_url=settings.base_url,
+        timeout=settings.timeout,
+        max_retries=1,
+    )
     return ChatService(client, settings.model)
 
 
