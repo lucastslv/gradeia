@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 
 MAX_STEPS = 4
 FALLBACK = "Não consegui formular uma resposta agora. Tente reformular a pergunta."
+# O thinking mode é habilitado por padrão e, com tools, a API exige que o
+# reasoning_content seja reenviado em todas as chamadas seguintes. Como o
+# histórico é persistido apenas como texto, desligamos o thinking.
+THINKING_DISABLED = {"thinking": {"type": "disabled"}}
 
 
 class ChatService:
@@ -40,6 +44,7 @@ class ChatService:
                 messages=messages,
                 tools=TOOL_SCHEMAS,
                 tool_choice="auto",
+                extra_body=THINKING_DISABLED,
             )
             message = response.choices[0].message
             tool_calls = _get(message, "tool_calls") or []
@@ -73,6 +78,10 @@ def _assistant_message(message: Any, tool_calls: list[Any]) -> dict[str, Any]:
     payload: dict[str, Any] = {"role": "assistant"}
     if content:
         payload["content"] = content
+    reasoning = _get(message, "reasoning_content")
+    if reasoning:
+        # Defensivo: se o thinking for habilitado, a API exige o reasoning de volta.
+        payload["reasoning_content"] = reasoning
     payload["tool_calls"] = [_call_dict(call) for call in tool_calls]
     return payload
 

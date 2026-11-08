@@ -28,12 +28,14 @@ def content_response(text: str):
     return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
-def tool_response(name: str, arguments: str):
+def tool_response(name: str, arguments: str, reasoning: str | None = None):
     call = SimpleNamespace(
         id="call_1",
         function=SimpleNamespace(name=name, arguments=arguments),
     )
-    message = SimpleNamespace(content=None, tool_calls=[call])
+    message = SimpleNamespace(
+        content=None, tool_calls=[call], reasoning_content=reasoning
+    )
     return SimpleNamespace(choices=[SimpleNamespace(message=message)])
 
 
@@ -53,13 +55,15 @@ def analise(possibilidade_html: bytes):
 def test_answers_without_tools(possibilidade_html: bytes) -> None:
     client = FakeClient([content_response("São 20 ofertadas.")])
 
-    answer = ChatService(client, "deepseek-chat").reply(
+    answer = ChatService(client, "deepseek-flash").reply(
         analise(possibilidade_html), [], "quantas estão ofertadas?"
     )
 
     assert answer == "São 20 ofertadas."
-    assert client.completions.calls[0]["model"] == "deepseek-chat"
-    messages = client.completions.calls[0]["messages"]
+    primeira_chamada = client.completions.calls[0]
+    assert primeira_chamada["model"] == "deepseek-flash"
+    assert primeira_chamada["extra_body"] == {"thinking": {"type": "disabled"}}
+    messages = primeira_chamada["messages"]
     assert messages[0]["role"] == "system"
     assert messages[-1] == {"role": "user", "content": "quantas estão ofertadas?"}
 
@@ -72,7 +76,7 @@ def test_executes_tool_and_feeds_result_back(possibilidade_html: bytes) -> None:
         ]
     )
 
-    answer = ChatService(client, "deepseek-chat").reply(
+    answer = ChatService(client, "deepseek-flash").reply(
         analise(possibilidade_html), [], "horário de INF01113?"
     )
 
@@ -91,7 +95,7 @@ def test_sends_history_to_model(possibilidade_html: bytes) -> None:
         Mensagem(role="assistant", content="são 23."),
     ]
 
-    ChatService(client, "deepseek-chat").reply(
+    ChatService(client, "deepseek-flash").reply(
         analise(possibilidade_html), historico, "e as obrigatórias?"
     )
 
@@ -100,12 +104,29 @@ def test_sends_history_to_model(possibilidade_html: bytes) -> None:
     assert {"role": "assistant", "content": "são 23."} in messages
 
 
+def test_preserves_reasoning_content_when_present(possibilidade_html: bytes) -> None:
+    client = FakeClient(
+        [
+            tool_response("resumo", "{}", reasoning="vou consultar o resumo"),
+            content_response("ok"),
+        ]
+    )
+
+    ChatService(client, "deepseek-flash").reply(
+        analise(possibilidade_html), [], "resuma"
+    )
+
+    mensagens = client.completions.calls[1]["messages"]
+    assistente = [m for m in mensagens if m["role"] == "assistant"][0]
+    assert assistente["reasoning_content"] == "vou consultar o resumo"
+
+
 def test_stops_after_max_steps(possibilidade_html: bytes) -> None:
     client = FakeClient(
         [tool_response("resumo", "{}") for _ in range(MAX_STEPS)]
     )
 
-    answer = ChatService(client, "deepseek-chat").reply(
+    answer = ChatService(client, "deepseek-flash").reply(
         analise(possibilidade_html), [], "loop"
     )
 

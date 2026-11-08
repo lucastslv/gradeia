@@ -6,7 +6,9 @@ import os
 from dataclasses import dataclass
 
 DEFAULT_BASE_URL = "https://api.deepseek.com"
-DEFAULT_MODEL = "deepseek-chat"
+# "deepseek-chat" foi descontinuado em 2026-07-24; os modelos atuais são
+# "deepseek-flash" (V4.1 Flash) e "deepseek-v4-pro".
+DEFAULT_MODEL = "deepseek-flash"
 
 
 @dataclass(frozen=True)

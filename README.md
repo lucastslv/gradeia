@@ -46,8 +46,17 @@ Opcional. Usa um provedor OpenAI-compatível (DeepSeek por padrão):
 export DEEPSEEK_API_KEY=...
 # opcionais
 export DEEPSEEK_BASE_URL=https://api.deepseek.com
-export DEEPSEEK_MODEL=deepseek-chat
+export DEEPSEEK_MODEL=deepseek-flash
 ```
+
+`deepseek-chat` foi descontinuado em 2026-07-24. Use `deepseek-flash` (padrão)
+ou `deepseek-v4-pro`.
+
+A API da DeepSeek é **stateless**: não existe um "conversations mode" no
+servidor (o parâmetro `conversation` do Responses API é explicitamente não
+suportado). O histórico é mantido localmente, em SQLite. O thinking mode fica
+desligado porque, com tool calls, a API exige reenviar o `reasoning_content` em
+todas as chamadas seguintes — e o histórico persistido é só texto.
 
 O modelo recebe a análise como contexto e pode chamar ferramentas (`resumo`,
 `listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`). Sem a chave, o
