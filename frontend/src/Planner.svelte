@@ -126,9 +126,9 @@
 </script>
 
 {#if erro}
-	<p class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{erro}</p>
+	<p class="border-l-2 border-[#CE1126] pl-4 text-sm text-red-700">{erro}</p>
 {:else if !dados}
-	<p class="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500">
+	<p class="py-2 font-mono text-[11px] uppercase tracking-wider text-slate-400">
 		Carregando planejador…
 	</p>
 {:else}
@@ -136,17 +136,36 @@
 		<Catalogo courses={dados.cursos} {selecionadas} onadd={adicionar} />
 
 		<div class="min-w-0 flex-1 space-y-3">
-			<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-				<span class="text-sm font-medium text-slate-900">{dados.curso}</span>
-				<span>{dados.periodo}</span>
-				<span>{grade.credits} créditos na grade</span>
+			<div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+				<span class="text-lg font-semibold tracking-tight text-slate-900">{dados.curso}</span>
+				<span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">
+					{dados.periodo}
+				</span>
+				<span class="font-mono text-[11px] uppercase tracking-wider text-slate-500">
+					{grade.credits} créditos
+				</span>
 				<span
-					class:text-emerald-700={salvo && !salvando}
-					class:text-amber-700={!salvo && !salvando}
+					class="font-mono text-[11px] uppercase tracking-wider {salvando
+						? 'text-slate-400'
+						: salvo
+							? 'text-[#00539F]'
+							: 'text-[#8A5A00]'}"
 				>
 					{salvando ? 'salvando…' : salvo ? 'salvo' : 'não salvo'}
 				</span>
 			</div>
+
+			<GradeSemanal
+				items={grade.items}
+				onescolher={escolher}
+				turmaConflita={(code, letter) => grade.turmaConflita(code, letter)}
+			/>
+
+			{#if grade.hasConflict}
+				<p class="border-l-2 border-[#CE1126] py-0.5 pl-4 text-sm text-red-700">
+					{grade.conflicts.length} conflito(s) de horário — troque a turma de uma delas.
+				</p>
+			{/if}
 
 			<SeletorTurmas
 				items={grade.items}
@@ -154,14 +173,6 @@
 				onremover={remover}
 				turmaConflita={(code, letter) => grade.turmaConflita(code, letter)}
 			/>
-
-			{#if grade.hasConflict}
-				<p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-					{grade.conflicts.length} conflito(s) de horário — troque a turma de uma delas.
-				</p>
-			{/if}
-
-			<GradeSemanal items={grade.items} />
 		</div>
 	</div>
 {/if}

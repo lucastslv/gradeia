@@ -1,17 +1,14 @@
 {% if not mensagens %}
-<p class="rounded-lg bg-slate-50 p-3 text-sm text-slate-500">
-  Pergunte sobre oferta, horários ou turmas. Ex.: “quais obrigatórias estão
-  ofertadas?”
+<p class="font-mono text-[11px] uppercase tracking-wider text-slate-400">
+  Pergunte sobre oferta, horários ou turmas.
 </p>
 {% endif %}
 
 {% for mensagem in mensagens %}
   {% if mensagem.role == "user" %}
-  <div class="ml-6 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-    {{ mensagem.content }}
-  </div>
+  <div class="msg-user">{{ mensagem.content }}</div>
   {% else %}
-  <div class="chat-md mr-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+  <div class="chat-md msg-assistente whitespace-pre-wrap">
     {{ mensagem.content|markdown }}
   </div>
   {% endif %}

@@ -1,3 +1,18 @@
 @import 'tailwindcss';
 
 /* A ilha herda a superfície clara da página; nada de tema escuro aqui. */
+
+/* Confirmação de troca de turma via drag-n-drop: mesmo quando a turma nova cai
+   no mesmo horário da antiga, o bloco pisca para o usuário ver que trocou. */
+@keyframes troca-pulso {
+	from {
+		box-shadow: 0 0 0 3px #00539f;
+	}
+	to {
+		box-shadow: 0 0 0 3px transparent;
+	}
+}
+
+.troca-flash {
+	animation: troca-pulso 700ms ease-out;
+}

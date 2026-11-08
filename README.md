@@ -1,6 +1,9 @@
-# matricula-ai
+# gradeia
 
 Assistente de matrícula de veteranos da UFRGS.
+
+O nome é **gradeia** ("montar a grade"); o pacote Python continua `matricula`
+por compatibilidade.
 
 A entrada é o HTML exportado da tela **Possibilidade de Matrícula** do Portal do
 Aluno. O arquivo diz o que o aluno **pode querer** cursar (elegibilidade, já

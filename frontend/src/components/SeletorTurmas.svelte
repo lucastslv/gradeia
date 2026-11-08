@@ -24,25 +24,23 @@
 </script>
 
 {#if items.length === 0}
-	<p
-		class="rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-400"
-	>
+	<p class="py-4 font-mono text-[11px] uppercase tracking-wider text-slate-400">
 		Nenhuma disciplina na grade — adicione pelo catálogo.
 	</p>
 {:else}
-	<ul class="space-y-2">
+	<ul class="divide-y divide-slate-200">
 		{#each items as { course, turma, color } (course.code)}
 			{@const emConflito = turmaConflita?.(course.code, turma.letter) ?? false}
-			<li class="rounded-lg border border-slate-200 bg-white p-2.5 shadow-sm">
+			<li class="py-3 first:pt-0">
 				<div class="flex items-start justify-between gap-2">
 					<div class="min-w-0">
 						<p class="truncate text-sm font-medium text-slate-900" title={course.name}>
 							{course.name}
 						</p>
-						<p class="text-[11px] text-slate-500">
-							{course.code} · {course.credits} créditos
+						<p class="mt-0.5 font-mono text-[11px] text-slate-500">
+							{course.code} · {course.credits}cr
 							{#if emConflito}
-								<span class="font-medium text-red-600">· em conflito</span>
+								<span class="font-semibold text-[#CE1126]">· em conflito</span>
 							{/if}
 						</p>
 					</div>
@@ -50,14 +48,14 @@
 						type="button"
 						aria-label="Remover {course.name}"
 						title="Remover da grade"
-						class="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-500 transition-colors hover:border-red-400 hover:text-red-600"
+						class="shrink-0 rounded-none border border-slate-300 px-2 py-0.5 text-xs text-slate-500 transition-colors hover:border-[#CE1126] hover:text-[#CE1126]"
 						onclick={() => onremover(course.code)}
 					>
 						✕
 					</button>
 				</div>
 
-				<div class="mt-1.5 flex flex-wrap gap-1.5">
+				<div class="mt-2 flex flex-wrap gap-1.5">
 					{#each course.turmas as opcao (opcao.letter)}
 						{@const ativa = opcao.letter === turma.letter}
 						{@const conflita = turmaConflita?.(course.code, opcao.letter) ?? false}
@@ -65,14 +63,15 @@
 							type="button"
 							aria-pressed={ativa}
 							title={legenda(opcao, conflita)}
-							class="rounded-md border px-2 py-1 text-xs transition-colors"
+							class="rounded-none border px-2 py-1 text-xs transition-colors"
 							class:border-dashed={conflita && !ativa}
-							class:bg-slate-50={!ativa}
+							class:border-slate-300={!ativa}
 							class:text-slate-500={!ativa}
+							class:hover:border-slate-900={!ativa}
 							style:border-color={ativa
 								? conflita
 									? CONFLICT_BORDER
-									: color.border
+									: '#0f172a'
 								: undefined}
 							style:background={ativa ? color.bg : undefined}
 							style:color={ativa ? color.text : undefined}

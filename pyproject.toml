@@ -1,5 +1,5 @@
 [project]
-name = "matricula-ai"
+name = "gradeia"
 version = "0.1.0"
 description = "Assistente de matrícula de veteranos da UFRGS"
 readme = "README.md"

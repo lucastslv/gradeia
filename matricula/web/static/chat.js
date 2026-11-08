@@ -13,8 +13,8 @@
     const div = document.createElement("div");
     div.className =
       role === "user"
-        ? "ml-6 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
-        : "chat-md mr-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 whitespace-pre-wrap";
+        ? "msg-user"
+        : "chat-md msg-assistente whitespace-pre-wrap";
     chat.appendChild(div);
     scroll();
     return div;

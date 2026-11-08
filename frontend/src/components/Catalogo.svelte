@@ -45,25 +45,25 @@
 	}
 </script>
 
-<aside
-	class="w-full shrink-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm xl:w-72"
->
+<aside class="w-full shrink-0 xl:w-72 xl:border-r xl:border-slate-300 xl:pr-6">
 	<div class="flex items-baseline justify-between gap-2">
 		<h2 class="text-sm font-semibold text-slate-900">Catálogo</h2>
-		<span class="text-[11px] text-slate-500">{filtrados.length} de {courses.length}</span>
+		<span class="font-mono text-[11px] tabular-nums text-slate-400">
+			{filtrados.length}/{courses.length}
+		</span>
 	</div>
 
 	<input
 		type="search"
 		bind:value={query}
 		placeholder="Buscar disciplina ou sigla"
-		class="mt-2 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm shadow-sm focus:border-emerald-500 focus:outline-none"
+		class="mt-3 w-full rounded-none border border-slate-900 px-2.5 py-1.5 text-sm placeholder:text-slate-400 focus:border-[#00539F] focus:shadow-[2px_2px_0_0_#00539F] focus:outline-none"
 	>
 
-	<div class="mt-2 space-y-1.5">
+	<div class="mt-2 space-y-2">
 		<select
 			bind:value={estado}
-			class="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs shadow-sm focus:border-emerald-500 focus:outline-none"
+			class="w-full rounded-none border border-slate-900 px-2 py-1.5 text-xs focus:border-[#00539F] focus:shadow-[2px_2px_0_0_#00539F] focus:outline-none"
 		>
 			<option value="todas">Todos os estados</option>
 			<option value="ofertada">Ofertadas</option>
@@ -72,7 +72,7 @@
 		</select>
 		<select
 			bind:value={carater}
-			class="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs shadow-sm focus:border-emerald-500 focus:outline-none"
+			class="w-full rounded-none border border-slate-900 px-2 py-1.5 text-xs focus:border-[#00539F] focus:shadow-[2px_2px_0_0_#00539F] focus:outline-none"
 		>
 			<option value="todos">Todos os caráteres</option>
 			<option value="Obrigatória">Obrigatórias</option>
@@ -80,42 +80,46 @@
 		</select>
 	</div>
 
-	<ul class="mt-3 max-h-[30rem] space-y-1 overflow-y-auto pr-1">
+	<ul class="mt-4 max-h-[30rem] divide-y divide-slate-100 overflow-y-auto pr-1">
 		{#each filtrados as course (course.code)}
-			<li class="rounded-lg border border-slate-100 p-2">
-				<div class="flex items-start justify-between gap-2">
+			<li class="py-2.5 first:pt-0">
+				<div class="flex items-start justify-between gap-3">
 					<div class="min-w-0">
 						<p class="truncate text-sm font-medium text-slate-900" title={course.name}>
 							{course.name}
 						</p>
-						<p class="text-[11px] text-slate-500">
-							{course.code} · {course.credits} créditos · {course.carater}
-							{#if course.etapa !== null}· etapa {course.etapa}{/if}
+						<p class="mt-0.5 font-mono text-[11px] text-slate-500">
+							{course.code} · {course.credits}cr · {course.carater}
+							{#if course.etapa !== null} · et{course.etapa}{/if}
 						</p>
 					</div>
 
 					{#if course.estado === 'ofertada'}
 						{#if selecionadas.includes(course.code)}
-							<span class="shrink-0 text-[11px] font-medium text-emerald-700">na grade</span>
+							<span class="shrink-0 font-mono text-[11px] font-semibold uppercase tracking-wider text-[#00539F]">
+								na grade
+							</span>
 						{:else}
 							<button
 								type="button"
 								title="Adicionar à grade"
-								class="shrink-0 rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:border-emerald-500 hover:text-emerald-700"
+								class="shrink-0 rounded-none border border-slate-900 px-2 py-0.5 text-xs font-semibold text-slate-900 transition-colors hover:bg-slate-900 hover:text-white"
 								onclick={() => onadd(course)}
 							>
 								+
 							</button>
 						{/if}
 					{:else}
-						<span class="shrink-0 text-[11px] text-slate-400">
+						<span class="shrink-0 font-mono text-[11px] uppercase tracking-wider text-slate-400">
 							{rotuloEstado(course.estado)}
 						</span>
 					{/if}
 				</div>
 			</li>
 		{:else}
-			<li class="px-1 py-3 text-xs text-slate-400">Nenhuma disciplina com esses filtros.</li>
+			<li class="py-3 font-mono text-[11px] uppercase tracking-wider text-slate-400">
+				Nenhuma disciplina com esses filtros.
+			</li>
 		{/each}
 	</ul>
 </aside>

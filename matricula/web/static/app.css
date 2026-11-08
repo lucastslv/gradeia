@@ -1,6 +1,18 @@
 :root {
   color-scheme: light;
+
+  /* Tricolor UFRGS: acento (azul) e os três estados da oferta. */
+  --azul: #00539f;
+  --azul-escuro: #003f7d;
+  --vermelho: #ce1126;
+  --amarelo: #f5a800;
+  --amarelo-texto: #8a5a00;
+  --tinta: #0f172a;
+  --hairline: #e2e8f0;
+  --hairline-forte: #cbd5e1;
 }
+
+/* ---------- Tabela de disciplinas ---------- */
 
 .disc-header,
 .disc-row {
@@ -13,11 +25,12 @@
 }
 
 .disc-header {
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-  font-size: 0.7rem;
+  border-bottom: 1px solid #cbd5e1;
+  background: transparent;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.65rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #64748b;
 }
@@ -55,7 +68,8 @@
 .sigla {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.75rem;
-  color: #475569;
+  font-weight: 600;
+  color: #334155;
 }
 
 .nome {
@@ -67,30 +81,43 @@
 .carater,
 .creditos {
   color: #475569;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Estado como tipografia + marcador quadrado, não caixa colorida. */
 .badge {
-  display: inline-block;
-  border-radius: 9999px;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.75rem;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
+.badge::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  background: currentColor;
+}
+
 .badge-ofertada {
-  background: #ecfdf5;
-  color: #047857;
+  color: var(--azul);
 }
 
 .badge-nao_ofertada {
-  background: #f1f5f9;
-  color: #64748b;
+  color: var(--vermelho);
 }
 
 .badge-nao_publicado {
-  background: #fffbeb;
-  color: #b45309;
+  color: var(--amarelo-texto);
+}
+
+.badge-nao_publicado::before {
+  background: var(--amarelo);
 }
 
 .turmas {
@@ -108,12 +135,140 @@
 }
 
 .turma-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-weight: 600;
-  color: #334155;
+  color: #0f172a;
 }
 
 .campus {
   color: #94a3b8;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ---------- Formulários e botões ---------- */
+
+.label-mono {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+.input-hard {
+  width: 100%;
+  border: 1px solid #0f172a;
+  border-radius: 0;
+  background: #fff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.input-hard:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 2px 2px 0 0 var(--azul);
+}
+
+.input-hard::placeholder {
+  color: #94a3b8;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: box-shadow 120ms ease, transform 120ms ease, background-color 120ms ease,
+    color 120ms ease;
+}
+
+/* Profundidade por deslocamento duro, sem desfoque. */
+.btn-primary {
+  border: 1px solid var(--tinta);
+  background: var(--azul);
+  color: #fff;
+  box-shadow: 3px 3px 0 0 var(--tinta);
+}
+
+.btn-primary:hover {
+  background: var(--azul-escuro);
+}
+
+.btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 0 #0f172a;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  border: 1px solid #0f172a;
+  background: transparent;
+  color: #0f172a;
+}
+
+.btn-ghost:hover {
+  background: #0f172a;
+  color: #fff;
+}
+
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-dark {
+  border: 1px solid #0f172a;
+  background: #0f172a;
+  color: #fff;
+}
+
+.btn-dark:hover {
+  background: #334155;
+}
+
+/* ---------- Avisos (hairline, sem caixa) ---------- */
+
+.notice {
+  border-left: 2px solid currentColor;
+  padding: 0.15rem 0 0.15rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* ---------- Chat ---------- */
+
+.msg-user {
+  margin-left: 2rem;
+  border-right: 2px solid var(--azul);
+  padding-right: 0.75rem;
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--azul-escuro);
+  white-space: pre-wrap;
+}
+
+.msg-assistente {
+  border-left: 2px solid #e2e8f0;
+  padding-left: 0.9rem;
+  font-size: 0.875rem;
+  color: #334155;
 }
 
 .chat-md > :first-child {
@@ -152,7 +307,7 @@
 }
 
 .chat-md code {
-  border-radius: 0.25rem;
+  border-radius: 0;
   background: #e2e8f0;
   padding: 0 0.2rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -161,10 +316,11 @@
 
 .chat-md pre {
   overflow-x: auto;
-  border-radius: 0.5rem;
-  background: #0f172a;
+  border-left: 2px solid var(--azul);
+  border-radius: 0;
+  background: #f8fafc;
   padding: 0.65rem;
-  color: #e2e8f0;
+  color: #0f172a;
 }
 
 .chat-md pre code {
@@ -181,14 +337,34 @@
 
 .chat-md th,
 .chat-md td {
-  border: 1px solid #e2e8f0;
+  border: 0;
+  border-bottom: 1px solid #e2e8f0;
   padding: 0.25rem 0.4rem;
   text-align: left;
 }
 
+.chat-md th {
+  border-bottom: 1px solid #cbd5e1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
 .chat-md a {
-  color: #047857;
+  color: var(--azul);
   text-decoration: underline;
+}
+
+.cursor-blink {
+  animation: cursor-piscar 1.1s steps(2, start) infinite;
+}
+
+@keyframes cursor-piscar {
+  to {
+    visibility: hidden;
+  }
 }
 
 .whitespace-pre-wrap {

@@ -29,7 +29,7 @@ export const COLORS: readonly GradeColor[] = [
  * Borda dos blocos em conflito. Fica fora da paleta de propósito: é um alerta,
  * não a identidade de uma cadeira.
  */
-export const CONFLICT_BORDER = '#DC2626';
+export const CONFLICT_BORDER = '#CE1126';
 
 /**
  * O mesmo alerta sobre superfície escura. O tom de `CONFLICT_BORDER` foi
