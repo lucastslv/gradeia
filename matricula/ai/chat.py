@@ -1,4 +1,4 @@
-"""Orquestração do chat com tool calling sobre uma análise."""
+"""Orquestração do chat com a Responses API (stateless) e tool calling."""
 
 from __future__ import annotations
 
@@ -13,14 +13,13 @@ logger = logging.getLogger(__name__)
 
 MAX_STEPS = 4
 FALLBACK = "Não consegui formular uma resposta agora. Tente reformular a pergunta."
-# O thinking mode é habilitado por padrão e, com tools, a API exige que o
-# reasoning_content seja reenviado em todas as chamadas seguintes. Como o
-# histórico é persistido apenas como texto, desligamos o thinking.
-THINKING_DISABLED = {"thinking": {"type": "disabled"}}
+# A Responses API é stateless e o thinking vem ligado por padrão. Desligamos
+# para não pagar latência/tokens de raciocínio num chat de consulta.
+REASONING_DISABLED = {"effort": "none"}
 
 
 class ChatService:
-    """Cliente OpenAI-compatível (DeepSeek) com ferramentas da análise."""
+    """Cliente OpenAI-compatível usando `/responses` (DeepSeek)."""
 
     def __init__(self, client: Any, model: str) -> None:
         self._client = client
@@ -28,37 +27,41 @@ class ChatService:
 
     def reply(self, analise: Analise, history: Iterable[Any], pergunta: str) -> str:
         tools = AnalysisTools(analise)
-        messages: list[dict[str, Any]] = [
-            {"role": "system", "content": build_system_prompt(analise)}
-        ]
-        messages.extend(
+        input_items: list[dict[str, Any]] = [
             {"role": mensagem.role, "content": mensagem.content}
             for mensagem in history
             if mensagem.role in {"user", "assistant"}
-        )
-        messages.append({"role": "user", "content": pergunta})
+        ]
+        input_items.append({"role": "user", "content": pergunta})
 
         for _ in range(MAX_STEPS):
-            response = self._client.chat.completions.create(
+            response = self._client.responses.create(
                 model=self._model,
-                messages=messages,
+                instructions=build_system_prompt(analise),
+                input=input_items,
                 tools=TOOL_SCHEMAS,
                 tool_choice="auto",
-                extra_body=THINKING_DISABLED,
+                reasoning=REASONING_DISABLED,
             )
-            message = response.choices[0].message
-            tool_calls = _get(message, "tool_calls") or []
-            if not tool_calls:
-                content = _get(message, "content")
-                return (content or "").strip() or FALLBACK
 
-            messages.append(_assistant_message(message, tool_calls))
-            for call in tool_calls:
+            output = list(getattr(response, "output", None) or [])
+            calls = [item for item in output if _item_type(item) == "function_call"]
+            if not calls:
+                return _output_text(response) or FALLBACK
+
+            # Reenvia a saída do modelo (message/reasoning/function_call) e
+            # acrescenta o resultado de cada ferramenta.
+            input_items.extend(_item_dict(item) for item in output)
+            for call in calls:
                 call_id, name, arguments = _call_parts(call)
                 result = tools.call(name, arguments)
                 logger.info("tool %s -> %.200s", name, result)
-                messages.append(
-                    {"role": "tool", "tool_call_id": call_id, "content": result}
+                input_items.append(
+                    {
+                        "type": "function_call_output",
+                        "call_id": call_id,
+                        "output": result,
+                    }
                 )
 
         return (
@@ -67,48 +70,68 @@ class ChatService:
         )
 
 
-def _get(message: Any, key: str) -> Any:
-    if isinstance(message, dict):
-        return message.get(key)
-    return getattr(message, key, None)
+def _item_type(item: Any) -> str | None:
+    if isinstance(item, dict):
+        return item.get("type")
+    return getattr(item, "type", None)
 
 
-def _assistant_message(message: Any, tool_calls: list[Any]) -> dict[str, Any]:
-    content = _get(message, "content")
-    payload: dict[str, Any] = {"role": "assistant"}
-    if content:
-        payload["content"] = content
-    reasoning = _get(message, "reasoning_content")
-    if reasoning:
-        # Defensivo: se o thinking for habilitado, a API exige o reasoning de volta.
-        payload["reasoning_content"] = reasoning
-    payload["tool_calls"] = [_call_dict(call) for call in tool_calls]
-    return payload
+def _item_dict(item: Any) -> dict[str, Any]:
+    if isinstance(item, dict):
+        return dict(item)
+    if hasattr(item, "model_dump"):
+        return item.model_dump(exclude_none=True)
+
+    data: dict[str, Any] = {"type": _item_type(item)}
+    for key in ("id", "status", "role", "call_id", "name", "arguments"):
+        value = getattr(item, key, None)
+        if value is not None:
+            data[key] = value
+    content = getattr(item, "content", None)
+    if content is not None:
+        data["content"] = [_part_dict(part) for part in content]
+    return data
 
 
-def _call_dict(call: Any) -> dict[str, Any]:
-    if isinstance(call, dict):
-        return call
-    if hasattr(call, "model_dump"):
-        return call.model_dump(exclude_none=True)
-    function = getattr(call, "function", None)
-    return {
-        "id": getattr(call, "id", None),
-        "type": "function",
-        "function": {
-            "name": getattr(function, "name", None),
-            "arguments": getattr(function, "arguments", None),
-        },
-    }
+def _part_dict(part: Any) -> dict[str, Any]:
+    if isinstance(part, dict):
+        return part
+    if hasattr(part, "model_dump"):
+        return part.model_dump(exclude_none=True)
+    return {"type": getattr(part, "type", None), "text": getattr(part, "text", None)}
+
+
+def _output_text(response: Any) -> str:
+    text = getattr(response, "output_text", None)
+    if text:
+        return str(text).strip()
+
+    parts: list[str] = []
+    for item in getattr(response, "output", None) or []:
+        if _item_type(item) != "message":
+            continue
+        content = item.get("content") if isinstance(item, dict) else getattr(item, "content", None)
+        for part in content or []:
+            part_type = (
+                part.get("type") if isinstance(part, dict) else getattr(part, "type", None)
+            )
+            part_text = (
+                part.get("text") if isinstance(part, dict) else getattr(part, "text", None)
+            )
+            if part_type == "output_text" and part_text:
+                parts.append(part_text)
+    return "".join(parts).strip()
 
 
 def _call_parts(call: Any) -> tuple[str, str, str]:
     if isinstance(call, dict):
-        function = call.get("function") or {}
-        return call.get("id", ""), function.get("name", ""), function.get("arguments") or "{}"
-    function = getattr(call, "function", None)
+        return (
+            call.get("call_id", ""),
+            call.get("name", ""),
+            call.get("arguments") or "{}",
+        )
     return (
-        getattr(call, "id", ""),
-        getattr(function, "name", ""),
-        getattr(function, "arguments", None) or "{}",
+        getattr(call, "call_id", ""),
+        getattr(call, "name", ""),
+        getattr(call, "arguments", None) or "{}",
     )

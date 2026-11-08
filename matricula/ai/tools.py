@@ -12,70 +12,62 @@ from ..core.text import normalize_name
 TOOL_SCHEMAS: list[dict[str, Any]] = [
     {
         "type": "function",
-        "function": {
-            "name": "resumo",
-            "description": "Retorna curso, período, se a oferta foi publicada e "
-            "a contagem de disciplinas por estado.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": False,
-            },
+        "name": "resumo",
+        "description": "Retorna curso, período, se a oferta foi publicada e "
+        "a contagem de disciplinas por estado.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False,
         },
     },
     {
         "type": "function",
-        "function": {
-            "name": "listar_disciplinas",
-            "description": "Lista disciplinas da possibilidade de matrícula, com "
-            "filtros opcionais por estado, caráter e texto (nome ou sigla).",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "estado": {
-                        "type": "string",
-                        "enum": ["ofertada", "nao_ofertada", "nao_publicado"],
-                    },
-                    "carater": {
-                        "type": "string",
-                        "enum": ["Obrigatória", "Eletiva"],
-                    },
-                    "busca": {"type": "string"},
-                    "limite": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 50,
-                    },
+        "name": "listar_disciplinas",
+        "description": "Lista disciplinas da possibilidade de matrícula, com "
+        "filtros opcionais por estado, caráter e texto (nome ou sigla).",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "estado": {
+                    "type": "string",
+                    "enum": ["ofertada", "nao_ofertada", "nao_publicado"],
                 },
-                "additionalProperties": False,
+                "carater": {
+                    "type": "string",
+                    "enum": ["Obrigatória", "Eletiva"],
+                },
+                "busca": {"type": "string"},
+                "limite": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                },
             },
+            "additionalProperties": False,
         },
     },
     {
         "type": "function",
-        "function": {
-            "name": "detalhar_disciplina",
-            "description": "Retorna todos os dados de uma disciplina e suas turmas "
-            "com horários e campus.",
-            "parameters": {
-                "type": "object",
-                "properties": {"sigla": {"type": "string"}},
-                "required": ["sigla"],
-                "additionalProperties": False,
-            },
+        "name": "detalhar_disciplina",
+        "description": "Retorna todos os dados de uma disciplina e suas turmas "
+        "com horários e campus.",
+        "parameters": {
+            "type": "object",
+            "properties": {"sigla": {"type": "string"}},
+            "required": ["sigla"],
+            "additionalProperties": False,
         },
     },
     {
         "type": "function",
-        "function": {
-            "name": "listar_turmas",
-            "description": "Lista apenas as turmas e horários de uma disciplina.",
-            "parameters": {
-                "type": "object",
-                "properties": {"sigla": {"type": "string"}},
-                "required": ["sigla"],
-                "additionalProperties": False,
-            },
+        "name": "listar_turmas",
+        "description": "Lista apenas as turmas e horários de uma disciplina.",
+        "parameters": {
+            "type": "object",
+            "properties": {"sigla": {"type": "string"}},
+            "required": ["sigla"],
+            "additionalProperties": False,
         },
     },
 ]
