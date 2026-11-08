@@ -94,3 +94,91 @@ def test_call_rejeita_ferramenta_e_argumentos_invalidos(analise) -> None:
     assert "erro" in json.loads(tools.call("listar_disciplinas", "{quebrado"))
     assert "erro" in json.loads(tools.call("listar_disciplinas", "[]"))
     assert "erro" in json.loads(tools.call("listar_disciplinas", '{"estado":"x"}'))
+
+
+def test_estado_da_grade_vazio(analise) -> None:
+    assert AnalysisTools(analise).estado_da_grade() == {
+        "total_disciplinas": 0,
+        "total_creditos": 0,
+        "selecionadas": [],
+        "conflitos": [],
+        "invalidas": [],
+    }
+
+
+def test_estado_da_grade_lista_escolhas(analise) -> None:
+    resultado = AnalysisTools(
+        analise, plano=[{"code": "INF01113", "letter": "A"}]
+    ).estado_da_grade()
+
+    assert resultado["total_disciplinas"] == 1
+    assert resultado["total_creditos"] == 4
+    assert resultado["selecionadas"][0]["sigla"] == "INF01113"
+    assert resultado["selecionadas"][0]["turma"] == "A"
+    assert resultado["conflitos"] == []
+    assert resultado["invalidas"] == []
+
+
+def test_estado_da_grade_marca_invalidas(analise) -> None:
+    resultado = AnalysisTools(
+        analise,
+        plano=[
+            {"code": "INF01090", "letter": "A"},
+            {"code": "INF01113", "letter": "Z"},
+        ],
+    ).estado_da_grade()
+
+    assert resultado["total_disciplinas"] == 0
+    assert len(resultado["invalidas"]) == 2
+
+
+def test_estado_da_grade_detecta_conflito(possibilidade_html: bytes) -> None:
+    possibilidades = parse_possibilidades(possibilidade_html)
+    turmas = [
+        Turma(
+            sigla="INF01113",
+            nome="ORGANIZAÇÃO DE COMPUTADORES",
+            turma="A",
+            encontros=[
+                Encontro(dia_semana=2, hora_inicio="08:30", hora_fim="10:10")
+            ],
+        ),
+        Turma(
+            sigla="INF05028",
+            nome="PROJETO E ANÁLISE DE ALGORITMOS II",
+            turma="A",
+            encontros=[
+                Encontro(dia_semana=2, hora_inicio="09:30", hora_fim="11:10")
+            ],
+        ),
+    ]
+    analise = analyze(possibilidades, "305", 544, turmas)
+
+    resultado = AnalysisTools(
+        analise,
+        plano=[
+            {"code": "INF01113", "letter": "A"},
+            {"code": "INF05028", "letter": "A"},
+        ],
+    ).estado_da_grade()
+
+    assert resultado["total_disciplinas"] == 2
+    assert resultado["conflitos"] == [
+        {
+            "a": {"sigla": "INF01113", "turma": "A"},
+            "b": {"sigla": "INF05028", "turma": "A"},
+            "dia": "seg",
+            "inicio": "09:30",
+            "fim": "10:10",
+        }
+    ]
+
+
+def test_call_estado_da_grade(analise) -> None:
+    resultado = json.loads(
+        AnalysisTools(analise, plano=[{"code": "INF01113", "letter": "A"}]).call(
+            "estado_da_grade", "{}"
+        )
+    )
+
+    assert resultado["total_disciplinas"] == 1

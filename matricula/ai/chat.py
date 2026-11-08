@@ -26,8 +26,14 @@ class ChatService:
         self._client = client
         self._model = model
 
-    async def reply(self, analise: Analise, history: Iterable[Any], pergunta: str) -> str:
-        tools = AnalysisTools(analise)
+    async def reply(
+        self,
+        analise: Analise,
+        history: Iterable[Any],
+        pergunta: str,
+        plano: list[dict[str, Any]] | None = None,
+    ) -> str:
+        tools = AnalysisTools(analise, plano=plano)
         input_items = _input_items(history, pergunta)
 
         for _ in range(MAX_STEPS):
@@ -48,10 +54,14 @@ class ChatService:
         )
 
     async def stream_reply(
-        self, analise: Analise, history: Iterable[Any], pergunta: str
+        self,
+        analise: Analise,
+        history: Iterable[Any],
+        pergunta: str,
+        plano: list[dict[str, Any]] | None = None,
     ) -> AsyncIterator[dict[str, Any]]:
         """Emite eventos `delta`, `reset`, `done` e `error`."""
-        tools = AnalysisTools(analise)
+        tools = AnalysisTools(analise, plano=plano)
         input_items = _input_items(history, pergunta)
 
         for _ in range(MAX_STEPS):

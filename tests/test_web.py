@@ -38,10 +38,10 @@ class FakeApi:
 
 
 class FakeChatService:
-    async def reply(self, analise, history, pergunta: str) -> str:
+    async def reply(self, analise, history, pergunta: str, plano=None) -> str:
         return f"**resposta** para: {pergunta}"
 
-    async def stream_reply(self, analise, history, pergunta: str):
+    async def stream_reply(self, analise, history, pergunta: str, plano=None):
         yield {"type": "delta", "text": "Olá"}
         yield {"type": "delta", "text": ", mundo"}
         yield {"type": "done", "text": f"Olá, mundo. Pergunta: {pergunta}"}
@@ -271,3 +271,36 @@ def test_planner_saves_and_validates_plan(
     )
 
     assert client.get(f"/api/analise/{ident}/planejador").json()["plano"] == []
+
+
+def test_chat_receives_current_plan(tmp_path, possibilidade_html: bytes) -> None:
+    store = AnalysisStore(tmp_path / "analises.db")
+    capturado = {}
+
+    class CapturingChat:
+        async def reply(self, analise, history, pergunta, plano=None):
+            capturado["plano"] = plano
+            return "ok"
+
+        async def stream_reply(self, analise, history, pergunta, plano=None):
+            capturado["plano"] = plano
+            yield {"type": "done", "text": "ok"}
+
+    app.dependency_overrides[get_api] = lambda: FakeApi()
+    app.dependency_overrides[get_store] = lambda: store
+    app.dependency_overrides[get_chat_service] = lambda: CapturingChat()
+
+    with TestClient(app) as test_client:
+        response = upload(test_client, possibilidade_html)
+        ident = analise_id(response)
+        test_client.put(
+            f"/api/analise/{ident}/plano",
+            json={"escolhas": [{"code": "INF01113", "letter": "A"}]},
+        )
+        test_client.post(
+            f"/analise/{ident}/chat", data={"mensagem": "o que tem na minha grade?"}
+        )
+
+    app.dependency_overrides.clear()
+
+    assert capturado["plano"] == [{"code": "INF01113", "letter": "A"}]

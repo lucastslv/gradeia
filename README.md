@@ -80,8 +80,10 @@ histórico é mantido localmente, em SQLite. O chat usa a **Responses API**
 (`/responses`), com `reasoning.effort = "none"` para reduzir latência e custo.
 
 O modelo recebe a análise como contexto e pode chamar ferramentas (`resumo`,
-`listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`). Sem a chave, o
-painel fica desabilitado e o resto do app funciona normalmente.
+`listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`, `estado_da_grade`).
+A última lê a grade atual salva no SQLite: disciplinas/turmas escolhidas,
+créditos e conflitos de horário. Sem a chave, o painel fica desabilitado e o
+resto do app funciona normalmente.
 
 A resposta é transmitida por **SSE** (`POST /analise/{id}/chat/stream`): o texto
 aparece enquanto é gerado e, ao final, é renderizado em Markdown. O histórico é

@@ -200,12 +200,13 @@ async def chat(
 
     if texto:
         historico = store.messages(analise_id)
+        plano = store.get_plano(analise_id)
         store.add_message(analise_id, "user", texto)
         if service is None:
             resposta = CHAT_NAO_CONFIGURADO
         else:
             try:
-                resposta = await service.reply(analise, historico, texto)
+                resposta = await service.reply(analise, historico, texto, plano=plano)
             except Exception:
                 logger.exception("falha ao consultar o modelo")
                 resposta = "Não consegui falar com o modelo agora. Tente novamente."
@@ -237,6 +238,7 @@ async def chat_stream(
             return
 
         historico = store.messages(analise_id)
+        plano = store.get_plano(analise_id)
         store.add_message(analise_id, "user", texto)
 
         if service is None:
@@ -247,7 +249,9 @@ async def chat_stream(
 
         concluido = False
         try:
-            async for evento in service.stream_reply(analise, historico, texto):
+            async for evento in service.stream_reply(
+                analise, historico, texto, plano=plano
+            ):
                 tipo = evento.get("type")
                 if tipo == "delta":
                     yield _sse("delta", {"text": evento.get("text", "")})

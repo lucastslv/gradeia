@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Callable
 
-from ..core.format import DIAS
+from ..core.format import DIAS, to_minutes
 from ..core.models import Analise, Estado, OfertaDisciplina, Turma
 from ..core.text import normalize_name
 
@@ -70,14 +70,28 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             "additionalProperties": False,
         },
     },
+    {
+        "type": "function",
+        "name": "estado_da_grade",
+        "description": "Retorna as disciplinas e turmas que o aluno já escolheu "
+        "na grade, com créditos totais e conflitos de horário.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": False,
+        },
+    },
 ]
 
 
 class AnalysisTools:
     """Implementação das ferramentas sobre uma análise concreta."""
 
-    def __init__(self, analise: Analise) -> None:
+    def __init__(
+        self, analise: Analise, plano: list[dict[str, Any]] | None = None
+    ) -> None:
         self._analise = analise
+        self._plano = plano or []
         self._por_sigla = {
             oferta.disciplina.sigla: oferta for oferta in analise.ofertas
         }
@@ -86,6 +100,7 @@ class AnalysisTools:
             "listar_disciplinas": self.listar_disciplinas,
             "detalhar_disciplina": self.detalhar_disciplina,
             "listar_turmas": self.listar_turmas,
+            "estado_da_grade": self.estado_da_grade,
         }
 
     def call(self, name: str, arguments: str | None) -> str:
@@ -164,6 +179,99 @@ class AnalysisTools:
             "estado": oferta.estado.value,
             "turmas": [_turma_dict(turma) for turma in oferta.turmas],
         }
+
+    def estado_da_grade(self) -> dict[str, Any]:
+        selecionadas: list[dict[str, Any]] = []
+        invalidas: list[dict[str, Any]] = []
+        sessoes: list[tuple[str, str, list[tuple[int, int, int]]]] = []
+        vistos: set[str] = set()
+
+        for escolha in self._plano:
+            if not isinstance(escolha, dict):
+                continue
+            code = str(escolha.get("code") or "").strip().upper()
+            letter = str(escolha.get("letter") or "").strip()
+            if not code or code in vistos:
+                continue
+
+            oferta = self._por_sigla.get(code)
+            if oferta is None:
+                invalidas.append(
+                    {"sigla": code, "turma": letter, "motivo": "fora da análise"}
+                )
+                continue
+
+            turma = next((t for t in oferta.turmas if t.turma == letter), None)
+            if turma is None:
+                invalidas.append(
+                    {"sigla": code, "turma": letter, "motivo": "turma não encontrada"}
+                )
+                continue
+
+            vistos.add(code)
+            encontros = []
+            faixas = []
+            for encontro in turma.encontros:
+                if encontro.dia_semana is None:
+                    continue
+                inicio = to_minutes(encontro.hora_inicio)
+                fim = to_minutes(encontro.hora_fim)
+                if inicio is None or fim is None or fim <= inicio:
+                    continue
+                faixas.append((encontro.dia_semana, inicio, fim))
+                encontros.append(
+                    {
+                        "dia": DIAS.get(encontro.dia_semana, str(encontro.dia_semana)),
+                        "dia_semana": encontro.dia_semana,
+                        "inicio": encontro.hora_inicio,
+                        "fim": encontro.hora_fim,
+                        "campus": encontro.campus,
+                        "local": encontro.espaco,
+                    }
+                )
+
+            selecionadas.append(
+                {
+                    "sigla": oferta.disciplina.sigla,
+                    "nome": oferta.disciplina.nome,
+                    "turma": turma.turma,
+                    "carater": oferta.disciplina.carater,
+                    "creditos": oferta.disciplina.creditos,
+                    "estado": oferta.estado.value,
+                    "encontros": encontros,
+                }
+            )
+            sessoes.append((oferta.disciplina.sigla, turma.turma, faixas))
+
+        conflitos = []
+        for indice, (sigla_a, turma_a, faixas_a) in enumerate(sessoes):
+            for sigla_b, turma_b, faixas_b in sessoes[indice + 1 :]:
+                for dia_a, inicio_a, fim_a in faixas_a:
+                    for dia_b, inicio_b, fim_b in faixas_b:
+                        if dia_a != dia_b:
+                            continue
+                        if inicio_a < fim_b and inicio_b < fim_a:
+                            conflitos.append(
+                                {
+                                    "a": {"sigla": sigla_a, "turma": turma_a},
+                                    "b": {"sigla": sigla_b, "turma": turma_b},
+                                    "dia": DIAS.get(dia_a, str(dia_a)),
+                                    "inicio": _hhmm(max(inicio_a, inicio_b)),
+                                    "fim": _hhmm(min(fim_a, fim_b)),
+                                }
+                            )
+
+        return {
+            "total_disciplinas": len(selecionadas),
+            "total_creditos": sum(item["creditos"] for item in selecionadas),
+            "selecionadas": selecionadas,
+            "conflitos": conflitos,
+            "invalidas": invalidas,
+        }
+
+
+def _hhmm(minutos: int) -> str:
+    return f"{minutos // 60:02d}:{minutos % 60:02d}"
 
 
 def _disciplina_dict(oferta: OfertaDisciplina) -> dict[str, Any]:

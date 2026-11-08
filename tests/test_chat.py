@@ -210,6 +210,34 @@ def test_stops_after_max_steps(possibilidade_html: bytes) -> None:
     assert len(client.responses.calls) == MAX_STEPS
 
 
+def test_tool_reads_current_plan(possibilidade_html: bytes) -> None:
+    client = FakeClient(
+        [
+            tool_response("estado_da_grade", "{}"),
+            content_response("Sua grade tem 1 disciplina."),
+        ]
+    )
+
+    answer = asyncio.run(
+        ChatService(client, "deepseek-flash").reply(
+            analise(possibilidade_html),
+            [],
+            "minha grade?",
+            plano=[{"code": "INF01113", "letter": "A"}],
+        )
+    )
+
+    assert "1 disciplina" in answer
+    segunda_chamada = client.responses.calls[1]["input"]
+    saidas = [
+        item
+        for item in segunda_chamada
+        if item.get("type") == "function_call_output"
+    ]
+    assert "INF01113" in saidas[0]["output"]
+    assert '"turma": "A"' in saidas[0]["output"]
+
+
 async def collect_stream(client, analise_, history=None, pergunta="oi"):
     service = ChatService(client, "deepseek-flash")
     return [

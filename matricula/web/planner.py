@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..core.format import to_minutes
 from ..core.models import Analise, OfertaDisciplina, Turma
 
 # A API usa DiaSemana 2..7 (2=segunda); a grade usa 0..5 (0=segunda).
@@ -45,8 +46,8 @@ def _turma(turma: Turma) -> dict[str, Any]:
         if encontro.dia_semana is None:
             continue
         day = encontro.dia_semana - DAY_OFFSET
-        start = _minutes(encontro.hora_inicio)
-        end = _minutes(encontro.hora_fim)
+        start = to_minutes(encontro.hora_inicio)
+        end = to_minutes(encontro.hora_fim)
         if day < 0 or day > 5 or start is None or end is None or end <= start:
             continue
         sessions.append({"day": day, "start": start, "end": end})
@@ -59,13 +60,3 @@ def _turma(turma: Turma) -> dict[str, Any]:
         "campus": campus,
         "local": local,
     }
-
-
-def _minutes(value: str | None) -> int | None:
-    if not value:
-        return None
-    try:
-        hour, minute = value.split(":")[:2]
-        return int(hour) * 60 + int(minute)
-    except (ValueError, AttributeError):
-        return None
