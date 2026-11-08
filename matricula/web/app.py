@@ -11,6 +11,7 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Upload
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 from ..ai.chat import ChatService
 from ..ai.config import Settings
@@ -22,6 +23,7 @@ from ..core.models import Analise
 from ..service.possibilidades import analisar, analisar_html
 from .filters import filter_ofertas
 from .markdown import render_markdown
+from .planner import planner_payload
 from .store import AnalysisStore
 
 logger = logging.getLogger(__name__)
@@ -31,6 +33,15 @@ MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 CHAT_NAO_CONFIGURADO = (
     "O chat ainda não está configurado. Defina DEEPSEEK_API_KEY para ativar."
 )
+
+
+class EscolhaPayload(BaseModel):
+    code: str
+    letter: str
+
+
+class PlanoPayload(BaseModel):
+    escolhas: list[EscolhaPayload]
 
 app = FastAPI(title="Assistente de Matrícula")
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
@@ -111,8 +122,7 @@ def ver_analise(
 
 
 @app.get("/analise/{analise_id}/linhas", response_class=HTMLResponse)
-def linhas(
-    request: Request,
+def linhas(    request: Request,
     analise_id: str,
     estado: str = "",
     carater: str = "",
@@ -133,9 +143,41 @@ def linhas(
     )
 
 
-@app.post("/analise/{analise_id}/reverificar")
-def reverificar(
+@app.get("/api/analise/{analise_id}/planejador")
+def api_planejador(
     analise_id: str,
+    store: AnalysisStore = Depends(get_store),
+) -> dict:
+    analise = _carregar(store, analise_id)
+    return planner_payload(analise, analise_id, store.get_plano(analise_id))
+
+
+@app.put("/api/analise/{analise_id}/plano")
+def api_salvar_plano(
+    analise_id: str,
+    payload: PlanoPayload,
+    store: AnalysisStore = Depends(get_store),
+) -> dict:
+    analise = _carregar(store, analise_id)
+    ofertas = {oferta.disciplina.sigla: oferta for oferta in analise.ofertas}
+
+    escolhas: list[dict] = []
+    vistos: set[str] = set()
+    for escolha in payload.escolhas:
+        oferta = ofertas.get(escolha.code)
+        if oferta is None or escolha.code in vistos:
+            continue
+        if not any(turma.turma == escolha.letter for turma in oferta.turmas):
+            continue
+        vistos.add(escolha.code)
+        escolhas.append({"code": escolha.code, "letter": escolha.letter})
+
+    store.save_plano(analise_id, escolhas)
+    return {"escolhas": escolhas}
+
+
+@app.post("/analise/{analise_id}/reverificar")
+def reverificar(    analise_id: str,
     api: UfrgsApi = Depends(get_api),
     store: AnalysisStore = Depends(get_store),
 ):

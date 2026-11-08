@@ -224,3 +224,49 @@ def test_chat_stream_sends_sse_events(
     # A resposta final foi persistida para o próximo carregamento da página.
     page = client.get(f"/analise/{ident}")
     assert "Olá, mundo. Pergunta: oi" in page.text
+
+
+def test_planner_endpoint_returns_catalog(
+    client: TestClient, possibilidade_html: bytes
+) -> None:
+    response = upload(client, possibilidade_html)
+    ident = analise_id(response)
+
+    data = client.get(f"/api/analise/{ident}/planejador").json()
+
+    assert data["periodo"] == "2026/2"
+    assert len(data["cursos"]) == 34
+    assert data["plano"] == []
+    inf01113 = next(c for c in data["cursos"] if c["code"] == "INF01113")
+    assert inf01113["turmas"][0]["letter"] == "A"
+
+
+def test_planner_saves_and_validates_plan(
+    client: TestClient, possibilidade_html: bytes
+) -> None:
+    response = upload(client, possibilidade_html)
+    ident = analise_id(response)
+    url = f"/api/analise/{ident}/plano"
+
+    saved = client.put(
+        url, json={"escolhas": [{"code": "INF01113", "letter": "A"}]}
+    )
+
+    assert saved.status_code == 200
+    assert saved.json()["escolhas"] == [{"code": "INF01113", "letter": "A"}]
+    assert client.get(f"/api/analise/{ident}/planejador").json()["plano"] == [
+        {"code": "INF01113", "letter": "A"}
+    ]
+
+    # Turma inexistente e disciplina não ofertada são descartadas.
+    client.put(
+        url,
+        json={
+            "escolhas": [
+                {"code": "INF01113", "letter": "Z"},
+                {"code": "INF01090", "letter": "A"},
+            ]
+        },
+    )
+
+    assert client.get(f"/api/analise/{ident}/planejador").json()["plano"] == []

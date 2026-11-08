@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 import threading
 import time
@@ -43,6 +44,15 @@ class AnalysisStore:
                 role TEXT NOT NULL,
                 content TEXT NOT NULL,
                 created_at REAL NOT NULL
+            )
+            """
+        )
+        self._connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS planos (
+                analise_id TEXT PRIMARY KEY,
+                escolhas TEXT NOT NULL,
+                updated_at REAL NOT NULL
             )
             """
         )
@@ -96,3 +106,30 @@ class AnalysisStore:
                 (analise_id, limit),
             ).fetchall()
         return [Mensagem(role=role, content=content) for role, content in reversed(rows)]
+
+    def save_plano(self, analise_id: str, escolhas: list[dict]) -> None:
+        payload = json.dumps(escolhas, ensure_ascii=False)
+        with self._lock:
+            self._connection.execute(
+                """
+                INSERT INTO planos (analise_id, escolhas, updated_at) VALUES (?, ?, ?)
+                ON CONFLICT(analise_id) DO UPDATE SET
+                    escolhas = excluded.escolhas,
+                    updated_at = excluded.updated_at
+                """,
+                (analise_id, payload, time.time()),
+            )
+            self._connection.commit()
+
+    def get_plano(self, analise_id: str) -> list[dict]:
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT escolhas FROM planos WHERE analise_id = ?", (analise_id,)
+            ).fetchone()
+        if row is None:
+            return []
+        try:
+            escolhas = json.loads(row[0])
+        except json.JSONDecodeError:
+            return []
+        return escolhas if isinstance(escolhas, list) else []
