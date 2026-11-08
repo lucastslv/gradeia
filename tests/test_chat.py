@@ -1,3 +1,4 @@
+import asyncio
 from types import SimpleNamespace
 
 from matricula.ai.chat import MAX_STEPS, ChatService
@@ -7,29 +8,49 @@ from matricula.core.parser import parse_possibilidades
 from matricula.web.store import Mensagem
 
 
-class FakeResponses:
+class FakeStream:
+    def __init__(self, events) -> None:
+        self._events = iter(events)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self._events)
+        except StopIteration:
+            raise StopAsyncIteration
+
+
+class FakeAsyncResponses:
     def __init__(self, responses) -> None:
         self.responses = list(responses)
         self.calls = []
 
-    def create(self, **kwargs):
+    async def create(self, **kwargs):
         self.calls.append(kwargs)
-        return self.responses.pop(0)
+        item = self.responses.pop(0)
+        if kwargs.get("stream"):
+            return FakeStream(item)
+        return item
 
 
 class FakeClient:
     def __init__(self, responses) -> None:
-        self.responses = FakeResponses(responses)
+        self.responses = FakeAsyncResponses(responses)
 
 
-def content_response(text: str):
-    item = SimpleNamespace(
+def message_item(text: str):
+    return SimpleNamespace(
         type="message",
         id="msg_1",
         role="assistant",
         content=[SimpleNamespace(type="output_text", text=text)],
     )
-    return SimpleNamespace(output=[item], output_text=text)
+
+
+def content_response(text: str):
+    return SimpleNamespace(output=[message_item(text)], output_text=text)
 
 
 def tool_response(name: str, arguments: str):
@@ -41,6 +62,15 @@ def tool_response(name: str, arguments: str):
         arguments=arguments,
     )
     return SimpleNamespace(output=[item], output_text="")
+
+
+def delta(text: str):
+    return SimpleNamespace(type="response.output_text.delta", delta=text)
+
+
+def completed(output, text: str = ""):
+    response = SimpleNamespace(output=output, output_text=text)
+    return SimpleNamespace(type="response.completed", response=response)
 
 
 def analise(possibilidade_html: bytes):
@@ -58,9 +88,10 @@ def analise(possibilidade_html: bytes):
 
 def test_answers_without_tools(possibilidade_html: bytes) -> None:
     client = FakeClient([content_response("São 20 ofertadas.")])
+    service = ChatService(client, "deepseek-flash")
 
-    answer = ChatService(client, "deepseek-flash").reply(
-        analise(possibilidade_html), [], "quantas estão ofertadas?"
+    answer = asyncio.run(
+        service.reply(analise(possibilidade_html), [], "quantas estão ofertadas?")
     )
 
     assert answer == "São 20 ofertadas."
@@ -76,9 +107,10 @@ def test_answers_without_tools(possibilidade_html: bytes) -> None:
 
 def test_tool_schemas_use_responses_format(possibilidade_html: bytes) -> None:
     client = FakeClient([content_response("ok")])
-
-    ChatService(client, "deepseek-flash").reply(
-        analise(possibilidade_html), [], "oi"
+    asyncio.run(
+        ChatService(client, "deepseek-flash").reply(
+            analise(possibilidade_html), [], "oi"
+        )
     )
 
     ferramenta = client.responses.calls[0]["tools"][0]
@@ -96,8 +128,10 @@ def test_executes_tool_and_feeds_result_back(possibilidade_html: bytes) -> None:
         ]
     )
 
-    answer = ChatService(client, "deepseek-flash").reply(
-        analise(possibilidade_html), [], "horário de INF01113?"
+    answer = asyncio.run(
+        ChatService(client, "deepseek-flash").reply(
+            analise(possibilidade_html), [], "horário de INF01113?"
+        )
     )
 
     assert "turma A" in answer
@@ -127,11 +161,16 @@ def test_replays_reasoning_items(possibilidade_html: bytes) -> None:
         arguments="{}",
     )
     client = FakeClient(
-        [SimpleNamespace(output=[reasoning, call], output_text=""), content_response("ok")]
+        [
+            SimpleNamespace(output=[reasoning, call], output_text=""),
+            content_response("ok"),
+        ]
     )
 
-    ChatService(client, "deepseek-flash").reply(
-        analise(possibilidade_html), [], "resuma"
+    asyncio.run(
+        ChatService(client, "deepseek-flash").reply(
+            analise(possibilidade_html), [], "resuma"
+        )
     )
 
     segunda_chamada = client.responses.calls[1]["input"]
@@ -146,8 +185,10 @@ def test_sends_history_to_model(possibilidade_html: bytes) -> None:
         Mensagem(role="assistant", content="são 23."),
     ]
 
-    ChatService(client, "deepseek-flash").reply(
-        analise(possibilidade_html), historico, "e as obrigatórias?"
+    asyncio.run(
+        ChatService(client, "deepseek-flash").reply(
+            analise(possibilidade_html), historico, "e as obrigatórias?"
+        )
     )
 
     entrada = client.responses.calls[0]["input"]
@@ -157,13 +198,79 @@ def test_sends_history_to_model(possibilidade_html: bytes) -> None:
 
 
 def test_stops_after_max_steps(possibilidade_html: bytes) -> None:
-    client = FakeClient(
-        [tool_response("resumo", "{}") for _ in range(MAX_STEPS)]
-    )
+    client = FakeClient([tool_response("resumo", "{}") for _ in range(MAX_STEPS)])
 
-    answer = ChatService(client, "deepseek-flash").reply(
-        analise(possibilidade_html), [], "loop"
+    answer = asyncio.run(
+        ChatService(client, "deepseek-flash").reply(
+            analise(possibilidade_html), [], "loop"
+        )
     )
 
     assert "Não consegui concluir" in answer
     assert len(client.responses.calls) == MAX_STEPS
+
+
+async def collect_stream(client, analise_, history=None, pergunta="oi"):
+    service = ChatService(client, "deepseek-flash")
+    return [
+        evento
+        async for evento in service.stream_reply(analise_, history or [], pergunta)
+    ]
+
+
+def test_streams_text_and_done(possibilidade_html: bytes) -> None:
+    client = FakeClient(
+        [
+            [
+                delta("Olá"),
+                delta(", mundo"),
+                completed([message_item("Olá, mundo")], "Olá, mundo"),
+            ]
+        ]
+    )
+
+    eventos = asyncio.run(collect_stream(client, analise(possibilidade_html)))
+
+    assert eventos == [
+        {"type": "delta", "text": "Olá"},
+        {"type": "delta", "text": ", mundo"},
+        {"type": "done", "text": "Olá, mundo"},
+    ]
+    assert client.responses.calls[0]["stream"] is True
+
+
+def test_stream_resets_between_tool_rounds(possibilidade_html: bytes) -> None:
+    chamada = SimpleNamespace(
+        type="function_call",
+        id="fc_1",
+        call_id="call_1",
+        name="detalhar_disciplina",
+        arguments='{"sigla":"INF01113"}',
+    )
+    client = FakeClient(
+        [
+            [delta("Vou consultar"), completed([chamada], "")],
+            [delta("A turma A"), completed([message_item("A turma A")], "A turma A")],
+        ]
+    )
+
+    eventos = asyncio.run(
+        collect_stream(client, analise(possibilidade_html), pergunta="horário?")
+    )
+
+    assert {"type": "reset"} in eventos
+    assert eventos[-1] == {"type": "done", "text": "A turma A"}
+    segunda_chamada = client.responses.calls[1]["input"]
+    assert any(item.get("type") == "function_call_output" for item in segunda_chamada)
+
+
+def test_stream_emits_error_when_failed(possibilidade_html: bytes) -> None:
+    failed = SimpleNamespace(
+        type="response.failed",
+        response=SimpleNamespace(output=[], output_text=""),
+    )
+    client = FakeClient([[failed]])
+
+    eventos = asyncio.run(collect_stream(client, analise(possibilidade_html)))
+
+    assert eventos == [{"type": "error", "text": "Não consegui concluir a resposta."}]

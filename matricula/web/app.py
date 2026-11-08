@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from functools import lru_cache
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -54,9 +55,9 @@ def get_chat_service() -> ChatService | None:
     if not settings.configured:
         return None
 
-    from openai import OpenAI
+    from openai import AsyncOpenAI
 
-    client = OpenAI(api_key=settings.api_key, base_url=settings.base_url)
+    client = AsyncOpenAI(api_key=settings.api_key, base_url=settings.base_url)
     return ChatService(client, settings.model)
 
 
@@ -145,7 +146,7 @@ def reverificar(
 
 
 @app.post("/analise/{analise_id}/chat", response_class=HTMLResponse)
-def chat(
+async def chat(
     request: Request,
     analise_id: str,
     mensagem: str = Form(...),
@@ -162,7 +163,7 @@ def chat(
             resposta = CHAT_NAO_CONFIGURADO
         else:
             try:
-                resposta = service.reply(analise, historico, texto)
+                resposta = await service.reply(analise, historico, texto)
             except Exception:
                 logger.exception("falha ao consultar o modelo")
                 resposta = "Não consegui falar com o modelo agora. Tente novamente."
@@ -175,6 +176,69 @@ def chat(
             "mensagens": store.messages(analise_id),
             "chat_configurado": service is not None,
         },
+    )
+
+
+@app.post("/analise/{analise_id}/chat/stream")
+async def chat_stream(
+    analise_id: str,
+    mensagem: str = Form(...),
+    store: AnalysisStore = Depends(get_store),
+    service: ChatService | None = Depends(get_chat_service),
+):
+    analise = _carregar(store, analise_id)
+    texto = mensagem.strip()
+
+    async def eventos():
+        if not texto:
+            yield _sse("done", {"html": ""})
+            return
+
+        historico = store.messages(analise_id)
+        store.add_message(analise_id, "user", texto)
+
+        if service is None:
+            resposta = CHAT_NAO_CONFIGURADO
+            store.add_message(analise_id, "assistant", resposta)
+            yield _sse("done", {"html": str(render_markdown(resposta))})
+            return
+
+        concluido = False
+        try:
+            async for evento in service.stream_reply(analise, historico, texto):
+                tipo = evento.get("type")
+                if tipo == "delta":
+                    yield _sse("delta", {"text": evento.get("text", "")})
+                elif tipo == "reset":
+                    yield _sse("reset", {})
+                elif tipo == "done":
+                    resposta = evento.get("text") or CHAT_NAO_CONFIGURADO
+                    store.add_message(analise_id, "assistant", resposta)
+                    yield _sse("done", {"html": str(render_markdown(resposta))})
+                    concluido = True
+                    return
+                elif tipo == "error":
+                    resposta = evento.get("text") or "Não consegui concluir a resposta."
+                    store.add_message(analise_id, "assistant", resposta)
+                    yield _sse("error", {"html": str(render_markdown(resposta))})
+                    concluido = True
+                    return
+        except Exception:
+            logger.exception("falha no streaming do chat")
+            resposta = "Não consegui falar com o modelo agora. Tente novamente."
+            store.add_message(analise_id, "assistant", resposta)
+            yield _sse("error", {"html": str(render_markdown(resposta))})
+            concluido = True
+
+        if not concluido:
+            resposta = "Não consegui concluir a resposta. Tente novamente."
+            store.add_message(analise_id, "assistant", resposta)
+            yield _sse("done", {"html": str(render_markdown(resposta))})
+
+    return StreamingResponse(
+        eventos(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 
@@ -191,6 +255,10 @@ def _render(
     return templates.TemplateResponse(
         request=request, name=template, context=context, status_code=status_code
     )
+
+
+def _sse(event: str, data: dict) -> str:
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
 def _erro(request: Request, mensagem: str) -> HTMLResponse:

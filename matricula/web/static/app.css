@@ -200,6 +200,10 @@
   text-decoration: underline;
 }
 
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
 @media (max-width: 760px) {
   .disc-header {
     display: none;

@@ -38,8 +38,13 @@ class FakeApi:
 
 
 class FakeChatService:
-    def reply(self, analise, history, pergunta: str) -> str:
+    async def reply(self, analise, history, pergunta: str) -> str:
         return f"**resposta** para: {pergunta}"
+
+    async def stream_reply(self, analise, history, pergunta: str):
+        yield {"type": "delta", "text": "Olá"}
+        yield {"type": "delta", "text": ", mundo"}
+        yield {"type": "done", "text": f"Olá, mundo. Pergunta: {pergunta}"}
 
 
 @pytest.fixture
@@ -188,8 +193,34 @@ def test_chat_without_api_key_shows_notice(
         chat = test_client.post(
             f"/analise/{ident}/chat", data={"mensagem": "oi"}
         )
+        stream = test_client.post(
+            f"/analise/{ident}/chat/stream", data={"mensagem": "oi"}
+        )
 
     app.dependency_overrides.clear()
 
     assert "Defina <code>DEEPSEEK_API_KEY</code>" in response.text
     assert "não está configurado" in chat.text
+    assert "não está configurado" in stream.text
+
+
+def test_chat_stream_sends_sse_events(
+    client: TestClient, possibilidade_html: bytes
+) -> None:
+    response = upload(client, possibilidade_html)
+    ident = analise_id(response)
+
+    stream = client.post(
+        f"/analise/{ident}/chat/stream", data={"mensagem": "oi"}
+    )
+
+    assert stream.status_code == 200
+    assert stream.headers["content-type"].startswith("text/event-stream")
+    assert "event: delta" in stream.text
+    assert '"text": "Olá"' in stream.text
+    assert "event: done" in stream.text
+    assert "<p>Olá, mundo. Pergunta: oi</p>" in stream.text
+
+    # A resposta final foi persistida para o próximo carregamento da página.
+    page = client.get(f"/analise/{ident}")
+    assert "Olá, mundo. Pergunta: oi" in page.text

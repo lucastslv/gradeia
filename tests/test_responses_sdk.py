@@ -1,7 +1,8 @@
+import asyncio
 import json
 
 import httpx
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from matricula.ai.chat import ChatService
 from matricula.core.join import analyze
@@ -57,14 +58,14 @@ def test_sdk_sends_responses_payload() -> None:
             },
         )
 
-    client = OpenAI(
+    client = AsyncOpenAI(
         api_key="teste",
         base_url="https://api.deepseek.com",
-        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
     )
 
-    answer = ChatService(client, "deepseek-flash").reply(
-        analise_minima(), [], "oi"
+    answer = asyncio.run(
+        ChatService(client, "deepseek-flash").reply(analise_minima(), [], "oi")
     )
 
     assert answer == "ok"

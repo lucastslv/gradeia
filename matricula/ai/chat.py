@@ -1,9 +1,10 @@
-"""Orquestração do chat com a Responses API (stateless) e tool calling."""
+"""Orquestração do chat com a Responses API (stateless), com streaming."""
 
 from __future__ import annotations
 
 import logging
-from typing import Any, Iterable
+from collections.abc import AsyncIterator, Iterable
+from typing import Any
 
 from ..core.models import Analise
 from .prompt import build_system_prompt
@@ -25,49 +26,132 @@ class ChatService:
         self._client = client
         self._model = model
 
-    def reply(self, analise: Analise, history: Iterable[Any], pergunta: str) -> str:
+    async def reply(self, analise: Analise, history: Iterable[Any], pergunta: str) -> str:
         tools = AnalysisTools(analise)
-        input_items: list[dict[str, Any]] = [
-            {"role": mensagem.role, "content": mensagem.content}
-            for mensagem in history
-            if mensagem.role in {"user", "assistant"}
-        ]
-        input_items.append({"role": "user", "content": pergunta})
+        input_items = _input_items(history, pergunta)
 
         for _ in range(MAX_STEPS):
-            response = self._client.responses.create(
-                model=self._model,
-                instructions=build_system_prompt(analise),
-                input=input_items,
-                tools=TOOL_SCHEMAS,
-                tool_choice="auto",
-                reasoning=REASONING_DISABLED,
+            response = await self._client.responses.create(
+                **_request(self._model, analise, input_items)
             )
-
             output = list(getattr(response, "output", None) or [])
-            calls = [item for item in output if _item_type(item) == "function_call"]
+            calls = _function_calls(output)
             if not calls:
                 return _output_text(response) or FALLBACK
 
-            # Reenvia a saída do modelo (message/reasoning/function_call) e
-            # acrescenta o resultado de cada ferramenta.
             input_items.extend(_item_dict(item) for item in output)
-            for call in calls:
-                call_id, name, arguments = _call_parts(call)
-                result = tools.call(name, arguments)
-                logger.info("tool %s -> %.200s", name, result)
-                input_items.append(
-                    {
-                        "type": "function_call_output",
-                        "call_id": call_id,
-                        "output": result,
-                    }
-                )
+            input_items.extend(_tool_outputs(calls, tools))
 
         return (
             "Não consegui concluir a análise em tempo hábil. "
             "Tente uma pergunta mais específica."
         )
+
+    async def stream_reply(
+        self, analise: Analise, history: Iterable[Any], pergunta: str
+    ) -> AsyncIterator[dict[str, Any]]:
+        """Emite eventos `delta`, `reset`, `done` e `error`."""
+        tools = AnalysisTools(analise)
+        input_items = _input_items(history, pergunta)
+
+        for _ in range(MAX_STEPS):
+            stream = await self._client.responses.create(
+                **_request(self._model, analise, input_items),
+                stream=True,
+            )
+
+            text = ""
+            response = None
+            failed = False
+            async for event in stream:
+                event_type = _event_type(event)
+                if event_type == "response.output_text.delta":
+                    delta = getattr(event, "delta", "") or ""
+                    if delta:
+                        text += delta
+                        yield {"type": "delta", "text": delta}
+                elif event_type in {
+                    "response.completed",
+                    "response.incomplete",
+                }:
+                    response = getattr(event, "response", None)
+                elif event_type == "response.failed":
+                    response = getattr(event, "response", None)
+                    failed = True
+
+            if failed:
+                yield {"type": "error", "text": "Não consegui concluir a resposta."}
+                return
+            if response is None:
+                yield {"type": "done", "text": text or FALLBACK}
+                return
+
+            output = list(getattr(response, "output", None) or [])
+            calls = _function_calls(output)
+            if not calls:
+                final = (text or _output_text(response)).strip() or FALLBACK
+                yield {"type": "done", "text": final}
+                return
+
+            # O texto emitido antes de uma tool call é descartado no cliente;
+            # a resposta final vem na próxima rodada do stream.
+            if text:
+                yield {"type": "reset"}
+            input_items.extend(_item_dict(item) for item in output)
+            input_items.extend(_tool_outputs(calls, tools))
+
+        yield {
+            "type": "done",
+            "text": "Não consegui concluir a análise em tempo hábil. "
+            "Tente uma pergunta mais específica.",
+        }
+
+
+def _request(model: str, analise: Analise, input_items: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "model": model,
+        "instructions": build_system_prompt(analise),
+        "input": input_items,
+        "tools": TOOL_SCHEMAS,
+        "tool_choice": "auto",
+        "reasoning": REASONING_DISABLED,
+    }
+
+
+def _input_items(history: Iterable[Any], pergunta: str) -> list[dict[str, Any]]:
+    items = [
+        {"role": mensagem.role, "content": mensagem.content}
+        for mensagem in history
+        if mensagem.role in {"user", "assistant"}
+    ]
+    items.append({"role": "user", "content": pergunta})
+    return items
+
+
+def _function_calls(output: list[Any]) -> list[Any]:
+    return [item for item in output if _item_type(item) == "function_call"]
+
+
+def _tool_outputs(calls: list[Any], tools: AnalysisTools) -> list[dict[str, Any]]:
+    results = []
+    for call in calls:
+        call_id, name, arguments = _call_parts(call)
+        result = tools.call(name, arguments)
+        logger.info("tool %s -> %.200s", name, result)
+        results.append(
+            {
+                "type": "function_call_output",
+                "call_id": call_id,
+                "output": result,
+            }
+        )
+    return results
+
+
+def _event_type(event: Any) -> str | None:
+    if isinstance(event, dict):
+        return event.get("type")
+    return getattr(event, "type", None)
 
 
 def _item_type(item: Any) -> str | None:

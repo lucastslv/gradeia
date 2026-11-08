@@ -43,10 +43,18 @@ Tailwind em vez de usar o CDN.
 Opcional. Usa um provedor OpenAI-compatível (DeepSeek por padrão):
 
 ```bash
-export DEEPSEEK_API_KEY=...
-# opcionais
-export DEEPSEEK_BASE_URL=https://api.deepseek.com
-export DEEPSEEK_MODEL=deepseek-flash
+cp .env.example .env
+# edite o .env e preencha DEEPSEEK_API_KEY
+uv run uvicorn matricula.web.app:app --reload
+```
+
+O `.env` é carregado automaticamente (sem sobrescrever variáveis já exportadas
+no shell). Variáveis aceitas:
+
+```bash
+DEEPSEEK_API_KEY=...
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-flash
 ```
 
 `deepseek-chat` foi descontinuado em 2026-07-24. Use `deepseek-flash` (padrão)
@@ -60,6 +68,10 @@ histórico é mantido localmente, em SQLite. O chat usa a **Responses API**
 O modelo recebe a análise como contexto e pode chamar ferramentas (`resumo`,
 `listar_disciplinas`, `detalhar_disciplina`, `listar_turmas`). Sem a chave, o
 painel fica desabilitado e o resto do app funciona normalmente.
+
+A resposta é transmitida por **SSE** (`POST /analise/{id}/chat/stream`): o texto
+aparece enquanto é gerado e, ao final, é renderizado em Markdown. O histórico é
+persistido no SQLite para o próximo carregamento da página.
 
 O HTML contém dados pessoais (nome, IP, sessão). O parser descarta esses campos;
 não versione o arquivo original. O fixture em `tests/fixtures/` é anonimizado.

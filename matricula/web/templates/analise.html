@@ -114,17 +114,14 @@
         {% include "partials/chat.html" %}
       </div>
 
-      <p id="chat-status" class="htmx-indicator mt-2 text-xs text-slate-500">
+      <p id="chat-status" class="hidden mt-2 text-xs text-slate-500">
         Pensando…
       </p>
 
       <form
+        id="chat-form"
         class="mt-2 flex gap-2"
-        hx-post="/analise/{{ analise_id }}/chat"
-        hx-target="#chat"
-        hx-swap="innerHTML"
-        hx-indicator="#chat-status"
-        hx-on::after-request="this.reset()"
+        data-stream-url="/analise/{{ analise_id }}/chat/stream"
       >
         <input
           type="text"
@@ -155,21 +152,14 @@
           "Quais eletivas não abrem neste semestre?",
           "Mostre os horários de INF01113"
         ] %}
-        <form
-          hx-post="/analise/{{ analise_id }}/chat"
-          hx-target="#chat"
-          hx-swap="innerHTML"
-          hx-indicator="#chat-status"
+        <button
+          type="button"
+          data-mensagem="{{ sugestao }}"
+          class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
+          {% if not chat_configurado %}disabled{% endif %}
         >
-          <input type="hidden" name="mensagem" value="{{ sugestao }}">
-          <button
-            type="submit"
-            class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 transition hover:bg-slate-100 disabled:opacity-40"
-            {% if not chat_configurado %}disabled{% endif %}
-          >
-            {{ sugestao }}
-          </button>
-        </form>
+          {{ sugestao }}
+        </button>
         {% endfor %}
       </div>
     </div>
