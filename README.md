@@ -35,8 +35,22 @@ uv run uvicorn matricula.web.app:app --reload
 # http://127.0.0.1:8000
 ```
 
-A UI usa HTMX e Tailwind via CDN (protótipo). Para produção, gere o CSS do
-Tailwind em vez de usar o CDN.
+A UI usa Jinja + Tailwind via CDN (protótipo). A grade semanal é uma **ilha
+Svelte** em `frontend/`, compilada para `matricula/web/static/planner/`; ela tem
+CSS próprio. O chat usa SSE com JS puro.
+
+Para produção, gere o CSS da página com o Tailwind em vez do CDN.
+
+### Rebuild da ilha
+
+Os assets compilados são versionados, então só é preciso rebuildar ao alterar a
+grade:
+
+```bash
+cd frontend
+npm install
+npm run build
+```
 
 ## Chat
 

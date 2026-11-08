@@ -83,7 +83,8 @@ def test_upload_renders_report(client: TestClient, possibilidade_html: bytes) ->
     assert response.status_code == 200
     assert "CIÊNCIA DA COMPUTAÇÃO" in response.text
     assert "Período 2026/2" in response.text
-    assert "INF01113" in response.text
+    assert 'id="planner"' in response.text
+    assert 'data-endpoint="/api/analise/' in response.text
 
 
 def test_filter_by_offered(client: TestClient, possibilidade_html: bytes) -> None:

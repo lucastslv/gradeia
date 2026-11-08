@@ -116,15 +116,6 @@
   color: #94a3b8;
 }
 
-.htmx-indicator {
-  display: none;
-}
-
-.htmx-request.htmx-indicator,
-.htmx-request .htmx-indicator {
-  display: block;
-}
-
 .chat-md > :first-child {
   margin-top: 0;
 }
